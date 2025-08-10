@@ -1,0 +1,74 @@
+﻿@model List<ShiftSwap.R.PL.Dtos.ShiftScheduleDto>
+
+@{
+    ViewData["Title"] = "Shift Schedule";
+    var agentName = ViewBag.AgentName as string;
+    var agentId = Context.Request.Query["agentId"];
+    var fromDate = Context.Request.Query["fromDate"];
+    var toDate = Context.Request.Query["toDate"];
+}
+
+<h2>Shift Schedule for @agentName</h2>
+
+<!-- Filter Form -->
+<form method="get" asp-controller="ShiftSchedule" asp-action="Index" class="mb-4">
+    <input type="hidden" name="agentId" value="@agentId" />
+    <div class="row">
+        <div class="col-md-3">
+            <label>From Date</label>
+            <input type="date" name="fromDate" class="form-control" value="@fromDate" />
+        </div>
+        <div class="col-md-3">
+            <label>To Date</label>
+            <input type="date" name="toDate" class="form-control" value="@toDate" />
+        </div>
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a class="btn btn-success" asp-action="DownloadExcel"
+               asp-route-agentId="@agentId"
+               asp-route-fromDate="@fromDate"
+               asp-route-toDate="@toDate">
+                Download Excel
+            </a>
+        </div>
+    </div>
+</form>
+
+@if (Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Shift Start</th>
+                <th>Shift End</th>
+                <th>Shift</th>
+                <th>LOB</th>
+                <th>Schedule</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@item.ShiftStart</td>
+                    <td>@item.ShiftEnd</td>
+                    <td>@item.Shift</td>
+                    <td>@item.LOB</td>
+                    <td>@item.Schedule</td>
+                    <td>
+                        <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">
+        No shift schedules available for this agent in the selected date range.
+    </div>
+}

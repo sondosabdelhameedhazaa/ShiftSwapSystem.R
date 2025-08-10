@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShiftSwap.R.BLL.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using ShiftSwap.R.DAL.Data.Contexts;
 using ShiftSwap.R.DAL.Models;
 using System;
@@ -28,6 +29,20 @@ namespace ShiftSwap.R.BLL.Repositories
                                           && s.Date <= endDate
                                           && s.Agent.ProjectId == projectId)
                                  .ToListAsync();
+        }
+
+        public async Task<IEnumerable<ShiftSchedule>> GetSchedulesForAgentAsync(int agentId, DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            var query = _context.ShiftSchedules
+                                .Where(s => s.AgentId == agentId);
+
+            if (fromDate.HasValue)
+                query = query.Where(s => s.Date >= fromDate.Value.Date);
+
+            if (toDate.HasValue)
+                query = query.Where(s => s.Date <= toDate.Value.Date);
+
+            return await query.ToListAsync();
         }
     }
 }

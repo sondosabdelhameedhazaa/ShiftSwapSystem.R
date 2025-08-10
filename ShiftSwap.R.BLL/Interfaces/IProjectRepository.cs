@@ -9,5 +9,6 @@ namespace ShiftSwap.R.BLL.Interfaces
 {
     public interface IProjectRepository : IGenericRepository<Project>
     {
+        Task<Project> GetByNameAsync(string name);
     }
 }

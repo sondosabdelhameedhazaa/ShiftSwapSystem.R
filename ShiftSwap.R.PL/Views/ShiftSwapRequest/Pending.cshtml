@@ -1,0 +1,60 @@
+﻿@model IEnumerable<ShiftSwap.R.PL.Dtos.ShiftSwapRequestReadDto>
+
+@{
+    ViewData["Title"] = "Pending Swap Requests";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>Requestor</th>
+            <th>Target</th>
+            <th>Swap Date</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th style="width: 200px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var req in Model)
+            {
+                <tr>
+                    <td>@req.RequestorName</td>
+                    <td>@req.TargetName</td>
+                    <td>@req.SwapDate.ToShortDateString()</td>
+                    <td>@req.Status</td>
+                    <td>@req.Comment</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                <input type="hidden" name="RequestId" value="@req.Id" />
+                                <input type="hidden" name="IsApproved" value="true" />
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                <input type="hidden" name="RequestId" value="@req.Id" />
+                                <input type="hidden" name="IsApproved" value="false" />
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No pending requests found.</td>
+            </tr>
+        }
+    </tbody>
+</table>

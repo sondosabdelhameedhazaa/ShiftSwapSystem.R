@@ -1,0 +1,71 @@
+﻿@using ShiftSwap.R.PL.Dtos
+@model EditAgentDto
+
+@{
+    ViewData["Title"] = "Edit Agent";
+}
+
+<h1>Edit Agent</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Hidden field for ID -->
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="HRID" class="form-label"></label>
+                <input asp-for="HRID" class="form-control" />
+                <span asp-validation-for="HRID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="LoginID" class="form-label"></label>
+                <input asp-for="LoginID" class="form-control" />
+                <span asp-validation-for="LoginID" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="NTName" class="form-label"></label>
+                <input asp-for="NTName" class="form-control" />
+                <span asp-validation-for="NTName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Role" class="form-label"></label>
+                <select asp-for="Role" class="form-control" asp-items="Html.GetEnumSelectList<ShiftSwap.R.DAL.Models.Enums.AgentRole>()"></select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProjectId" class="form-label"></label>
+                <select asp-for="ProjectId" class="form-control" asp-items="ViewBag.Projects"></select>
+                <span asp-validation-for="ProjectId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="TeamLeaderId" class="form-label"></label>
+                <select asp-for="TeamLeaderId" class="form-control" asp-items="ViewBag.TeamLeaders">
+                    <option value="">-- Select Team Leader --</option>
+                </select>
+                <span asp-validation-for="TeamLeaderId" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

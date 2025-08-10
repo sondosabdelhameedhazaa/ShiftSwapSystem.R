@@ -1,0 +1,40 @@
+﻿@model IEnumerable<ShiftSwap.R.PL.Dtos.ShiftSwapRequestReadDto>
+
+@{
+    ViewData["Title"] = "My Swap Requests";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Swap Request</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Requestor</th>
+            <th>Target</th>
+            <th>Swap Date</th>
+            <th>Status</th>
+            <th>Comment</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var req in Model)
+        {
+            <tr>
+                <td>@req.RequestorName</td>     
+                <td>@req.TargetName</td>       
+                <td>@req.SwapDate.ToShortDateString()</td>
+                <td>@req.Status</td>
+                <td>@req.Comment</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,19 @@
+﻿@model ShiftSwap.R.PL.Dtos.ProjectDetailsDto
+
+@{
+    ViewData["Title"] = "Delete Project";
+}
+
+<h2>Delete Project</h2>
+
+<h3>Are you sure you want to delete this project?</h3>
+<div>
+    <h4>@Model.Name</h4>
+    <p><strong>Agents Count:</strong> @(Model.Agents?.Count ?? 0)</p>
+</div>
+
+<form asp-action="DeleteConfirmed">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

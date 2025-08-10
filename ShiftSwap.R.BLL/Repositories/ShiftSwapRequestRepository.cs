@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ShiftSwap.R.DAL.Models.Enums;
 
-
 namespace ShiftSwap.R.BLL.Repositories
 {
     public class ShiftSwapRequestRepository : GenericRepository<ShiftSwapRequest>, IShiftSwapRequestRepository
@@ -18,8 +17,10 @@ namespace ShiftSwap.R.BLL.Repositories
         public async Task<IEnumerable<ShiftSwapRequest>> GetPendingRequestsAsync()
         {
             return await _context.ShiftSwapRequests
- .Where(r => r.Status == SwapStatus.Pending).Include(r => r.RequestorAgent)
+                                 .Where(r => r.Status == SwapStatus.Pending)
+                                 .Include(r => r.RequestorAgent)
                                  .Include(r => r.TargetAgent)
+                                 .Include(r => r.ApprovedBy) 
                                  .ToListAsync();
         }
 
@@ -29,6 +30,7 @@ namespace ShiftSwap.R.BLL.Repositories
                                  .Where(r => r.RequestorAgentId == agentId || r.TargetAgentId == agentId)
                                  .Include(r => r.RequestorAgent)
                                  .Include(r => r.TargetAgent)
+                                 .Include(r => r.ApprovedBy) 
                                  .ToListAsync();
         }
     }

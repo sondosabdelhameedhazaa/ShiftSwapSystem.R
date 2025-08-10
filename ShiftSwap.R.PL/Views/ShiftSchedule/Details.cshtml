@@ -1,0 +1,37 @@
+﻿@model ShiftSwap.R.PL.Dtos.ShiftScheduleDto
+
+@{
+    ViewData["Title"] = "Shift Schedule Details";
+}
+
+<h2>Shift Schedule Details</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <dl class="row">
+            <dt class="col-sm-4">Agent Name</dt>
+            <dd class="col-sm-8">@Model.AgentName</dd>
+
+            <dt class="col-sm-4">Date</dt>
+            <dd class="col-sm-8">@Model.Date.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-4">Shift Start</dt>
+            <dd class="col-sm-8">@Model.ShiftStart</dd>
+
+            <dt class="col-sm-4">Shift End</dt>
+            <dd class="col-sm-8">@Model.ShiftEnd</dd>
+
+            <dt class="col-sm-4">Shift</dt>
+            <dd class="col-sm-8">@Model.Shift</dd>
+
+            <dt class="col-sm-4">LOB</dt>
+            <dd class="col-sm-8">@Model.LOB</dd>
+
+            <dt class="col-sm-4">Schedule</dt>
+            <dd class="col-sm-8">@Model.Schedule</dd>
+        </dl>
+
+        <a asp-action="Index" asp-route-agentId="@Model.AgentId" class="btn btn-secondary">Back to Schedule</a>
+    </div>
+</div>

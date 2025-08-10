@@ -1,0 +1,81 @@
+﻿@using ShiftSwap.R.PL.Dtos
+@model AgentDetailsDto
+
+@{
+    ViewData["Title"] = "Agent Details";
+}
+
+<h1>Agent Details</h1>
+<hr />
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.HRID)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.HRID)
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.LoginID)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.LoginID)
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.NTName)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.NTName)
+        </dd>
+
+        <dt class="col-sm-3">
+            @Html.DisplayNameFor(model => model.Role)
+        </dt>
+        <dd class="col-sm-9">
+            @Html.DisplayFor(model => model.Role)
+        </dd>
+
+        <dt class="col-sm-3">
+            Project
+        </dt>
+        <dd class="col-sm-9">
+            @Model.ProjectName
+        </dd>
+
+        <dt class="col-sm-3">
+            Team Leader
+        </dt>
+        <dd class="col-sm-9">
+            @Model.TeamLeaderName
+        </dd>
+    </dl>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+
+    <a asp-controller="ShiftSwapRequest"
+       asp-action="Create"
+       asp-route-targetAgentId="@Model.Id"
+       class="btn btn-primary">
+        Request Swap With This Agent
+    </a>
+
+    <a asp-controller="ShiftSchedule"
+       asp-action="Index"
+       asp-route-agentId="@Model.Id"
+       class="btn btn-info mt-2">
+        View Shift Schedule
+    </a>
+</div>

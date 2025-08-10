@@ -1,0 +1,31 @@
+﻿@model ShiftSwap.R.PL.Dtos.ProjectDetailsDto
+
+@{
+    ViewData["Title"] = "Project Details";
+}
+
+<h2>Project Details</h2>
+
+<div>
+    <h4>@Model.Name</h4>
+    <hr />
+    <p><strong>Agents Count:</strong> @(Model.Agents?.Count ?? 0)</p>
+
+    @if (Model.Agents != null && Model.Agents.Any())
+    {
+        <h5>Agents:</h5>
+        <ul>
+            @foreach (var agent in Model.Agents)
+            {
+                <li>@agent.Name</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">No Agents Assigned</p>
+    }
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>
