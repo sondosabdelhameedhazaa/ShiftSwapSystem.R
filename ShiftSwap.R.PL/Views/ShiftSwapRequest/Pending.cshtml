@@ -8,11 +8,19 @@
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success">@TempData["Success"]</div>
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
 }
 
-<table class="table table-bordered table-striped">
-    <thead class="thead-dark">
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
         <tr>
             <th>Requestor</th>
             <th>Target</th>
@@ -23,27 +31,33 @@
         </tr>
     </thead>
     <tbody>
-        @if (Model.Any())
+        @if (Model != null && Model.Any())
         {
             foreach (var req in Model)
             {
                 <tr>
-                    <td>@req.RequestorName</td>
-                    <td>@req.TargetName</td>
+                    <td>@(req.RequestorName ?? "<i class='text-muted'>N/A</i>")</td>
+                    <td>@(req.TargetName ?? "<i class='text-muted'>N/A</i>")</td>
                     <td>@req.SwapDate.ToShortDateString()</td>
                     <td>@req.Status</td>
                     <td>@req.Comment</td>
                     <td>
                         <div class="d-flex gap-2">
                             <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="RequestId" value="@req.Id" />
                                 <input type="hidden" name="IsApproved" value="true" />
-                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-check-circle"></i> Approve
+                                </button>
                             </form>
                             <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
                                 <input type="hidden" name="RequestId" value="@req.Id" />
                                 <input type="hidden" name="IsApproved" value="false" />
-                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
                             </form>
                         </div>
                     </td>
@@ -53,7 +67,9 @@
         else
         {
             <tr>
-                <td colspan="6" class="text-center text-muted">No pending requests found.</td>
+                <td colspan="6" class="text-center text-muted">
+                    No pending swap requests found.
+                </td>
             </tr>
         }
     </tbody>

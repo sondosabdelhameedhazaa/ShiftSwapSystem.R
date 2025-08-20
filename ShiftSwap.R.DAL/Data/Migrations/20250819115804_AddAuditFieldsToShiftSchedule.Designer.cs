@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSwap.R.DAL.Data.Contexts;
 
@@ -11,9 +12,11 @@ using ShiftSwap.R.DAL.Data.Contexts;
 namespace ShiftSwap.R.DAL.Data.Migrations
 {
     [DbContext(typeof(ShiftSwapDbContext))]
-    partial class ShiftSwapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250819115804_AddAuditFieldsToShiftSchedule")]
+    partial class AddAuditFieldsToShiftSchedule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

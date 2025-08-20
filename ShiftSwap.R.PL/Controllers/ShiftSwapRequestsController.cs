@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace ShiftSwap.R.PL.Controllers
 {
@@ -58,9 +59,7 @@ namespace ShiftSwap.R.PL.Controllers
 
             var currentAgent = await _agentRepo.GetByNTNameAsync(ntName);
             if (currentAgent == null)
-            {
                 return Unauthorized("Agent not found in the system.");
-            }
 
             var agentsInSameProject = await _agentRepo.GetAgentsByProjectAsync(currentAgent.ProjectId);
             var targetAgents = agentsInSameProject
@@ -96,7 +95,7 @@ namespace ShiftSwap.R.PL.Controllers
             if (requestor == null)
             {
                 ModelState.AddModelError("", "Agent not found in the system.");
-                return await LoadFormAgain(createDto, requestor?.Id);
+                return await LoadFormAgain(createDto, null);
             }
 
             var target = await _agentRepo.GetByIdAsync(createDto.TargetAgentId);
@@ -112,9 +111,6 @@ namespace ShiftSwap.R.PL.Controllers
                 return await LoadFormAgain(createDto, requestor.Id);
             }
 
-            if (!ModelState.IsValid)
-                return await LoadFormAgain(createDto, requestor.Id);
-
             if (createDto.SwapDate.Date < DateTime.Now.Date)
             {
                 ModelState.AddModelError("", "You cannot create a swap request for a past date.");
@@ -127,9 +123,16 @@ namespace ShiftSwap.R.PL.Controllers
                 return await LoadFormAgain(createDto, requestor.Id);
             }
 
+            if (!ModelState.IsValid)
+                return await LoadFormAgain(createDto, requestor.Id);
+
             var swapRequest = _mapper.Map<ShiftSwapRequest>(createDto);
             swapRequest.RequestorAgentId = requestor.Id;
             swapRequest.Status = SwapStatus.Pending;
+
+            // ✅ العلاقات مهمة علشان Map يشتغل صح للـ View
+            swapRequest.RequestorAgent = requestor;
+            swapRequest.TargetAgent = target;
 
             await _shiftSwapRepo.AddAsync(swapRequest);
 
@@ -166,7 +169,6 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(Pending));
         }
 
-        // 🔁 Helper to reload form with agents list
         private async Task<IActionResult> LoadFormAgain(ShiftSwapRequestCreateDto createDto, int? requestorId)
         {
             if (requestorId.HasValue)
@@ -193,5 +195,4 @@ namespace ShiftSwap.R.PL.Controllers
         }
     }
 }
-
 

@@ -6,11 +6,12 @@
 }
 
 <h2 class="mb-4">@ViewData["Title"]</h2>
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-<form asp-action="Create" method="post">
+<form id="swapRequestForm" method="post">
     <div class="form-group mb-3">
         <label asp-for="TargetAgentId">Target Agent</label>
-        <select asp-for="TargetAgentId" class="form-control" asp-items="agents">
+        <select asp-for="TargetAgentId" class="form-control" asp-items="agents" id="targetAgentSelect">
             <option value="">-- Select Agent --</option>
         </select>
         <span asp-validation-for="TargetAgentId" class="text-danger"></span>
@@ -18,7 +19,7 @@
 
     <div class="form-group mb-3">
         <label asp-for="SwapDate">Swap Date</label>
-        <input asp-for="SwapDate" type="date" class="form-control" />
+        <input asp-for="SwapDate" type="date" class="form-control" id="swapDateInput" />
         <span asp-validation-for="SwapDate" class="text-danger"></span>
     </div>
 
@@ -29,12 +30,50 @@
     </div>
 
     <div class="d-flex justify-content-between">
-        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="button" class="btn btn-success" id="confirmSwapBtn">Submit</button>
         <a asp-action="MyRequests" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 
+<!-- Modal (Pop-up confirmation) -->
+<div class="modal fade" id="confirmSwapModal" tabindex="-1" aria-labelledby="confirmSwapModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Swap Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Your Shift:</strong> <span id="yourShiftInfo">9:00 AM - 6:00 PM</span></p>
+                <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">12:00 PM - 9:00 PM</span></p>
+                <p>Do you want to proceed with this shift swap request?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" form="swapRequestForm">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-}
 
+    <script>
+        document.getElementById("confirmSwapBtn").addEventListener("click", function () {
+            const targetAgent = document.getElementById("targetAgentSelect");
+            const swapDate = document.getElementById("swapDateInput");
+
+            if (!targetAgent.value || !swapDate.value) {
+                alert("Please select an agent and swap date.");
+                return;
+            }
+
+            document.getElementById("yourShiftInfo").innerText = "9:00 AM - 6:00 PM";
+            document.getElementById("targetShiftInfo").innerText = "12:00 PM - 9:00 PM";
+
+            var modal = new bootstrap.Modal(document.getElementById("confirmSwapModal"));
+            modal.show();
+        });
+    </script>
+}

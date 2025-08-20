@@ -4,7 +4,6 @@ using ShiftSwap.R.PL.Dtos;
 using ShiftSwap.R.DAL.Models.Enums;
 using ShiftSwap.R.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ShiftSwap.R.PL.Controllers
@@ -12,12 +11,10 @@ namespace ShiftSwap.R.PL.Controllers
     public class AccountController : Controller
     {
         private readonly IAgentRepository _agentRepo;
-        private readonly IProjectRepository _projectRepo;
 
-        public AccountController(IAgentRepository agentRepo, IProjectRepository projectRepo)
+        public AccountController(IAgentRepository agentRepo)
         {
             _agentRepo = agentRepo;
-            _projectRepo = projectRepo;
         }
 
         // GET: /Account/Login
@@ -33,68 +30,37 @@ namespace ShiftSwap.R.PL.Controllers
             if (!ModelState.IsValid)
                 return View(loginDto);
 
-            var user = FakeUsers.Users.FirstOrDefault(u =>
-                u.Type == loginDto.IdentifierType &&
-                u.Identifier == loginDto.Identifier);
-
-            if (user != default)
+            var identifier = loginDto.Identifier?.Trim();
+            Agent agent = loginDto.IdentifierType switch
             {
-                // تخزين بيانات المستخدم في الـ Session
-                HttpContext.Session.SetString("Identifier", user.Identifier);
-                HttpContext.Session.SetString("IdentifierType", user.Type);
-                HttpContext.Session.SetString("UserRole", user.Role);
-                HttpContext.Session.SetString("UserProject", user.Project);
+                "HRID" => await _agentRepo.GetByHRIDAsync(identifier),
+                "NTName" => await _agentRepo.GetByNTNameAsync(identifier),
+                "LoginID" => await _agentRepo.GetByLoginIDAsync(identifier),
+                _ => null
+            };
 
-                // نحاول نجيب الـ Agent الحالي بناءً على نوع التعريف
-                Agent existingAgent = user.Type switch
+            if (agent != null)
+            {
+                // Store user info in session
+                HttpContext.Session.SetString("Identifier", identifier);
+                HttpContext.Session.SetString("IdentifierType", loginDto.IdentifierType);
+                HttpContext.Session.SetString("UserRole", agent.Role.ToString());
+                HttpContext.Session.SetString("UserProject", agent.Project?.Name ?? "");
+                HttpContext.Session.SetString("UserName", agent.NTName); 
+
+                // Redirect based on role
+                return agent.Role switch
                 {
-                    "NTName" => await _agentRepo.GetByNTNameAsync(user.Identifier),
-                    "HRID" => await _agentRepo.GetByHRIDAsync(user.Identifier),
-                    "LoginID" => await _agentRepo.GetByLoginIDAsync(user.Identifier),
-                    _ => null
-                };
-
-                // إذا مش موجود نضيفه (لو دوره Agent فقط)
-                if (existingAgent == null && user.Role == "Agent")
-                {
-                    // نحاول نجيب المشروع
-                    var allProjects = await _projectRepo.GetAllAsync();
-                    var project = allProjects.FirstOrDefault(p => p.Name == user.Project);
-
-                    // لو مش موجود نضيفه
-                    if (project == null)
-                    {
-                        project = new Project { Name = user.Project };
-                        await _projectRepo.AddAsync(project);
-                    }
-
-                    var newAgent = new Agent
-                    {
-                        Name = user.Name,
-                        NTName = user.Type == "NTName" ? user.Identifier : null,
-                        HRID = user.Type == "HRID" ? user.Identifier : null,
-                        LoginID = user.Type == "LoginID" ? user.Identifier : null,
-                        Role = AgentRole.Agent,
-                        ProjectId = project.Id
-                    };
-
-                    await _agentRepo.AddAsync(newAgent);
-                }
-
-                // إعادة التوجيه حسب الدور
-                return user.Role switch
-                {
-                    "Agent" => RedirectToAction("Index", "Agents"),
-                    "RTM" => RedirectToAction("Pending", "ShiftSwapRequest"),
-                    "TeamLeader" => RedirectToAction("Pending", "ShiftSwapRequest"),
+                    AgentRole.Agent => RedirectToAction("Index", "Agents"),
+                    AgentRole.TeamLeader => RedirectToAction("Pending", "ShiftSwapRequest"),
+                    AgentRole.RTM => RedirectToAction("Pending", "ShiftSwapRequest"),
                     _ => RedirectToAction("Index", "Home")
                 };
             }
+
 
             ModelState.AddModelError("", "Invalid credentials");
             return View(loginDto);
         }
     }
 }
-
-

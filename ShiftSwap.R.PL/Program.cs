@@ -34,7 +34,6 @@ namespace ShiftSwap.R.PL
             // Enable Windows Authentication (for NTName)
             builder.Services.AddAuthentication(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
 
-            // ✅ Enable Session
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(30); // Adjust session timeout as needed
@@ -62,20 +61,20 @@ namespace ShiftSwap.R.PL
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+
+
             app.UseRouting();
 
-            // Enable Authentication & Authorization
-            app.UseAuthentication();
+            app.UseSession();            
+            app.UseAuthentication();     
             app.UseAuthorization();
 
-            // ✅ Use Session
-            app.UseSession();
-
-            // Routing
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
+
+           
             app.Run();
         }
     }

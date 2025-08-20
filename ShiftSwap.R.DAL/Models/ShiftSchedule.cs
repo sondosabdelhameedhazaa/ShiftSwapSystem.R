@@ -18,6 +18,10 @@ namespace ShiftSwap.R.DAL.Models
 
         public int AgentId { get; set; }
         public Agent Agent { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
     }
 
 
