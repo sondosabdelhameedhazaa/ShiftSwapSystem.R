@@ -40,8 +40,11 @@ namespace ShiftSwap.R.BLL.Repositories
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
             => await _dbSet.Where(predicate).ToListAsync();
 
-        public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
-
+        public async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+        }
         public void Update(T entity) => _dbSet.Update(entity);
 
         public void Delete(T entity) => _dbSet.Remove(entity);

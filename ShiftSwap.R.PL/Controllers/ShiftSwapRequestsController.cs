@@ -128,11 +128,8 @@ namespace ShiftSwap.R.PL.Controllers
 
             var swapRequest = _mapper.Map<ShiftSwapRequest>(createDto);
             swapRequest.RequestorAgentId = requestor.Id;
+            swapRequest.TargetAgentId = target.Id;
             swapRequest.Status = SwapStatus.Pending;
-
-            // ✅ العلاقات مهمة علشان Map يشتغل صح للـ View
-            swapRequest.RequestorAgent = requestor;
-            swapRequest.TargetAgent = target;
 
             await _shiftSwapRepo.AddAsync(swapRequest);
 

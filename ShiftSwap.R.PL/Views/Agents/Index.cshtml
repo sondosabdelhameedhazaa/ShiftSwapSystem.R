@@ -44,12 +44,12 @@
                     <td>@agent.LoginID</td>
                     <td>@agent.NTName</td>
                     <td>@agent.Role</td>
-                    <td>@agent.ProjectName ?? "No Project"</td>
-                    <td>@agent.TeamLeaderName ?? "No Team Leader"</td>
+                    <td>@agent.ProjectName </td>
+                    <td>@agent.TeamLeaderName </td>
                     <td>
                         <a asp-action="Details" asp-route-id="@agent.Id" class="btn btn-info btn-sm">Details</a>
-                        <a asp-action="Edit" asp-route-id="@agent.Id" class="btn btn-warning btn-sm">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@agent.Id" class="btn btn-danger btn-sm">Delete</a>
+                        @* <a asp-action="Edit" asp-route-id="@agent.Id" class="btn btn-warning btn-sm">Edit</a> *@
+                        @* <a asp-action="Delete" asp-route-id="@agent.Id" class="btn btn-danger btn-sm">Delete</a> *@
                     </td>
                 </tr>
             }

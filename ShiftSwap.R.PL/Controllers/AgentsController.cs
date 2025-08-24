@@ -17,25 +17,30 @@ namespace ShiftSwap.R.PL.Controllers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-
-        // GET: Index
-        public async Task<IActionResult> Index(string search)
+        public async Task<IActionResult> Index()
         {
-            var agents = await _unitOfWork.Agents.GetAllAsync(includeProperties: "Project,TeamLeader");
+            // 1. جيب الـ NTName من السيشن (اتسجل وقت اللوجين)
+            var ntName = HttpContext.Session.GetString("UserName");
 
-            if (!string.IsNullOrEmpty(search))
-            {
-                string loweredSearch = search.ToLower();
-                agents = agents.Where(a =>
-                    (!string.IsNullOrEmpty(a.HRID) && a.HRID.ToLower().Contains(loweredSearch)) ||
-                    (!string.IsNullOrEmpty(a.Name) && a.Name.ToLower().Contains(loweredSearch)) ||
-                    (!string.IsNullOrEmpty(a.LoginID) && a.LoginID.ToLower().Contains(loweredSearch)) ||
-                    (!string.IsNullOrEmpty(a.NTName) && a.NTName.ToLower().Contains(loweredSearch))
-                ).ToList();
-            }
+            if (string.IsNullOrEmpty(ntName))
+                return RedirectToAction("Login", "Account");
 
-            var agentDtos = _mapper.Map<IEnumerable<AgentReadDto>>(agents);
-            ViewBag.Search = search;
+            // 2. جيب كل الـ Agents مع الـ Project والـ TL
+            var allAgents = await _unitOfWork.Agents.GetAllAsync(includeProperties: "Project,TeamLeader");
+
+            // 3. حدد مين هو المستخدم اللي عمل لوجين
+            var currentAgent = allAgents.FirstOrDefault(a => a.NTName.ToLower() == ntName.ToLower());
+
+            if (currentAgent == null)
+                return RedirectToAction("Login", "Account");
+
+            // 4. جيب الناس اللي معاه في نفس المشروع (واستبعد نفسه)
+            var agentsInSameProject = allAgents
+                .Where(a => a.ProjectId == currentAgent.ProjectId && a.Id != currentAgent.Id)
+                .ToList();
+
+            // 5. حولهم لـ DTOs واعرضهم
+            var agentDtos = _mapper.Map<IEnumerable<AgentReadDto>>(agentsInSameProject);
             return View(agentDtos);
         }
 
