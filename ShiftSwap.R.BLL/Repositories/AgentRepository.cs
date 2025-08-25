@@ -13,29 +13,18 @@ namespace ShiftSwap.R.BLL.Repositories
     {
         public AgentRepository(ShiftSwapDbContext context) : base(context) { }
 
-      
         public async Task<Agent> GetByHRIDAsync(string hrid) =>
-            await _context.Agents
-                          .Include(a => a.Project) 
-                          .FirstOrDefaultAsync(a => a.HRID == hrid);
+            await _context.Agents.Include(a => a.Project).FirstOrDefaultAsync(a => a.HRID == hrid);
 
-      
         public async Task<Agent> GetByLoginIDAsync(string loginId) =>
-            await _context.Agents
-                          .Include(a => a.Project)
-                          .FirstOrDefaultAsync(a => a.LoginID == loginId);
+            await _context.Agents.Include(a => a.Project).FirstOrDefaultAsync(a => a.LoginID == loginId);
 
-      
         public async Task<Agent> GetByNTNameAsync(string ntName) =>
-            await _context.Agents
-                          .Include(a => a.Project)
-                          .FirstOrDefaultAsync(a => a.NTName == ntName);
+            await _context.Agents.Include(a => a.Project).FirstOrDefaultAsync(a => a.NTName == ntName);
 
         public async Task<IEnumerable<Agent>> GetAgentsByProjectAsync(int projectId) =>
-            await _context.Agents
-                          .Where(a => a.ProjectId == projectId)
-                          .Include(a => a.Project)
-                          .ToListAsync();
+            await _context.Agents.Where(a => a.ProjectId == projectId).Include(a => a.Project).ToListAsync();
     }
+
 }
 

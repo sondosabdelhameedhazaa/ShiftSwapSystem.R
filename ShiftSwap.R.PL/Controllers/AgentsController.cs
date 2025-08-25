@@ -17,51 +17,43 @@ namespace ShiftSwap.R.PL.Controllers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
+
         public async Task<IActionResult> Index()
         {
-            // 1. جيب الـ NTName من السيشن (اتسجل وقت اللوجين)
             var ntName = HttpContext.Session.GetString("UserName");
 
             if (string.IsNullOrEmpty(ntName))
                 return RedirectToAction("Login", "Account");
 
-            // 2. جيب كل الـ Agents مع الـ Project والـ TL
             var allAgents = await _unitOfWork.Agents.GetAllAsync(includeProperties: "Project,TeamLeader");
 
-            // 3. حدد مين هو المستخدم اللي عمل لوجين
             var currentAgent = allAgents.FirstOrDefault(a => a.NTName.ToLower() == ntName.ToLower());
 
             if (currentAgent == null)
                 return RedirectToAction("Login", "Account");
 
-            // 4. جيب الناس اللي معاه في نفس المشروع (واستبعد نفسه)
             var agentsInSameProject = allAgents
                 .Where(a => a.ProjectId == currentAgent.ProjectId && a.Id != currentAgent.Id)
                 .ToList();
 
-            // 5. حولهم لـ DTOs واعرضهم
             var agentDtos = _mapper.Map<IEnumerable<AgentReadDto>>(agentsInSameProject);
             return View(agentDtos);
         }
 
-        // GET: Details
         public async Task<IActionResult> Details(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
             if (agent == null) return NotFound();
-            var agentDto = _mapper.Map<AgentDetailsDto>(agent); // ✅ تحويل إلى DTO
+            var agentDto = _mapper.Map<AgentDetailsDto>(agent);
             return View(agentDto);
         }
 
-
-        // GET: Create
         public async Task<IActionResult> Create()
         {
             await PopulateDropdowns();
             return View();
         }
 
-        // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateAgentDto createAgentDto)
@@ -80,7 +72,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(createAgentDto);
         }
 
-        // GET: Edit
         public async Task<IActionResult> Edit(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -91,7 +82,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(editDto);
         }
 
-        // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EditAgentDto editAgentDto)
@@ -101,7 +91,7 @@ namespace ShiftSwap.R.PL.Controllers
             if (ModelState.IsValid)
             {
                 var agent = _mapper.Map<Agent>(editAgentDto);
-                _unitOfWork.Agents.Update(agent);
+                await _unitOfWork.Agents.UpdateAsync(agent); // ✅ تم التعديل هنا
                 await _unitOfWork.CompleteAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -110,24 +100,21 @@ namespace ShiftSwap.R.PL.Controllers
             return View(editAgentDto);
         }
 
-        // GET: Delete
         public async Task<IActionResult> Delete(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
             if (agent == null) return NotFound();
 
-            var agentDto = _mapper.Map<AgentDetailsDto>(agent); // 
+            var agentDto = _mapper.Map<AgentDetailsDto>(agent);
             return View(agentDto);
         }
 
-        // POST: Delete Confirmed
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
 
-            // تحقق لو مرتبط كـ TeamLeader
             var subAgents = await _unitOfWork.Agents.FindAsync(a => a.TeamLeaderId == id);
             if (subAgents.Any())
             {
@@ -141,7 +128,6 @@ namespace ShiftSwap.R.PL.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
 
         private async Task PopulateDropdowns()
         {

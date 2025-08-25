@@ -1,4 +1,6 @@
-﻿namespace ShiftSwap.R.PL.Dtos
+﻿using System;
+
+namespace ShiftSwap.R.PL.Dtos
 {
     public class ShiftSwapRequestReadDto
     {

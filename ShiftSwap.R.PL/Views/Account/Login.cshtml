@@ -13,21 +13,17 @@
             <div class="card-body">
                 <form asp-action="Login" method="post">
                     <div class="form-group mb-3">
-                        <label asp-for="IdentifierType" class="form-label">Login By</label>
-                        <select asp-for="IdentifierType" class="form-control">
-                            <option value="">-- Select --</option>
-                            <option value="NTName">NTName</option>
-                            <option value="HRID">HRID</option>
-                            <option value="LoginId">Login ID</option>
-                        </select>
-                        <span asp-validation-for="IdentifierType" class="text-danger"></span>
+                        <label asp-for="Name" class="form-label">Name</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="LoginID" class="form-label">Login ID</label>
+                        <input asp-for="LoginID" class="form-control" />
+                        <span asp-validation-for="LoginID" class="text-danger"></span>
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label asp-for="Identifier" class="form-label">Identifier</label>
-                        <input asp-for="Identifier" class="form-control" />
-                        <span asp-validation-for="Identifier" class="text-danger"></span>
-                    </div>
+                   
 
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Login</button>

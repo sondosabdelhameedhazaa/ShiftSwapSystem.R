@@ -5,6 +5,7 @@ using ShiftSwap.R.DAL.Models.Enums;
 using ShiftSwap.R.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace ShiftSwap.R.PL.Controllers
 {
@@ -17,7 +18,6 @@ namespace ShiftSwap.R.PL.Controllers
             _agentRepo = agentRepo;
         }
 
-        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
@@ -30,25 +30,21 @@ namespace ShiftSwap.R.PL.Controllers
             if (!ModelState.IsValid)
                 return View(loginDto);
 
-            var identifier = loginDto.Identifier?.Trim();
-            Agent agent = loginDto.IdentifierType switch
-            {
-                "HRID" => await _agentRepo.GetByHRIDAsync(identifier),
-                "NTName" => await _agentRepo.GetByNTNameAsync(identifier),
-                "LoginID" => await _agentRepo.GetByLoginIDAsync(identifier),
-                _ => null
-            };
+            var loginId = loginDto.LoginID?.Trim().ToLower();
+            var name = loginDto.Name?.Trim().ToLower();
+
+            var agent = await _agentRepo.FindFirstAsync(a =>
+                a.LoginID.ToLower() == loginId &&
+                a.Name.ToLower() == name
+            );
 
             if (agent != null)
             {
-                // Store user info in session
-                HttpContext.Session.SetString("Identifier", identifier);
-                HttpContext.Session.SetString("IdentifierType", loginDto.IdentifierType);
                 HttpContext.Session.SetString("UserRole", agent.Role.ToString());
                 HttpContext.Session.SetString("UserProject", agent.Project?.Name ?? "");
-                HttpContext.Session.SetString("UserName", agent.NTName); 
+                HttpContext.Session.SetString("UserName", agent.NTName ?? agent.Name);
+                HttpContext.Session.SetString("LoginID", agent.LoginID);
 
-                // Redirect based on role
                 return agent.Role switch
                 {
                     AgentRole.Agent => RedirectToAction("Index", "Agents"),
@@ -58,9 +54,16 @@ namespace ShiftSwap.R.PL.Controllers
                 };
             }
 
-
-            ModelState.AddModelError("", "Invalid credentials");
+            ModelState.AddModelError("", "Invalid credentials. Please check your Login ID and Name.");
             return View(loginDto);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Account");
         }
     }
 }

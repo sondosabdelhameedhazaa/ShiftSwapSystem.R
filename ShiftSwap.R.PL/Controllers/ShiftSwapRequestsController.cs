@@ -136,7 +136,6 @@ namespace ShiftSwap.R.PL.Controllers
             TempData["Success"] = "Swap request created successfully.";
             return RedirectToAction(nameof(MyRequests));
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveOrReject(ShiftSwapRequestApprovalDto approvalDto)
@@ -154,10 +153,10 @@ namespace ShiftSwap.R.PL.Controllers
                 return Unauthorized("Approver not found.");
 
             request.Status = approvalDto.IsApproved ? SwapStatus.Approved : SwapStatus.Rejected;
-            request.Comment = approvalDto.Comment;
+            request.Comment = approvalDto.Comment ?? "";
             request.ApprovedById = approver.Id;
 
-            _shiftSwapRepo.Update(request);
+            await _shiftSwapRepo.UpdateAsync(request); 
 
             TempData["Success"] = approvalDto.IsApproved
                 ? "Swap request approved successfully."

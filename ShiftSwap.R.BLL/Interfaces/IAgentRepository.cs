@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ShiftSwap.R.DAL.Models;
+﻿using ShiftSwap.R.DAL.Models;
 
 namespace ShiftSwap.R.BLL.Interfaces
 {
@@ -14,4 +9,6 @@ namespace ShiftSwap.R.BLL.Interfaces
         Task<Agent> GetByNTNameAsync(string ntName);
         Task<IEnumerable<Agent>> GetAgentsByProjectAsync(int projectId);
     }
+
 }
+

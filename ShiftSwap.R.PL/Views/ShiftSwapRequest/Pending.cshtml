@@ -27,6 +27,7 @@
             <th>Swap Date</th>
             <th>Status</th>
             <th>Comment</th>
+            <th>Approved By</th>
             <th style="width: 200px;">Actions</th>
         </tr>
     </thead>
@@ -41,6 +42,7 @@
                     <td>@req.SwapDate.ToShortDateString()</td>
                     <td>@req.Status</td>
                     <td>@req.Comment</td>
+                    <td>@(string.IsNullOrEmpty(req.ApprovedBy) ? "-" : req.ApprovedBy)</td>
                     <td>
                         <div class="d-flex gap-2">
                             <form asp-action="ApproveOrReject" method="post" class="d-inline">
@@ -67,7 +69,7 @@
         else
         {
             <tr>
-                <td colspan="6" class="text-center text-muted">
+                <td colspan="7" class="text-center text-muted">
                     No pending swap requests found.
                 </td>
             </tr>

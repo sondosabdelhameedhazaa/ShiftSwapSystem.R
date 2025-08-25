@@ -12,8 +12,10 @@ namespace ShiftSwap.R.BLL.Interfaces
         Task<T> GetByIdAsync(int id);
         Task<IEnumerable<T>> GetAllAsync(string includeProperties = "");
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<T> FindFirstAsync(Expression<Func<T, bool>> predicate);
         Task AddAsync(T entity);
-        void Update(T entity);
+        Task UpdateAsync(T entity); // ✅ هنا
         void Delete(T entity);
     }
+
 }

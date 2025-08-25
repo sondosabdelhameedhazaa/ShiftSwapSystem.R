@@ -25,28 +25,33 @@ namespace ShiftSwap.R.BLL.Repositories
         public async Task<IEnumerable<T>> GetAllAsync(string includeProperties = "")
         {
             IQueryable<T> query = _dbSet;
-
             if (!string.IsNullOrEmpty(includeProperties))
             {
                 foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
                     query = query.Include(includeProperty);
-                }
             }
-
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-            => await _dbSet.Where(predicate).ToListAsync();
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
+            await _dbSet.Where(predicate).ToListAsync();
+
+        public async Task<T> FindFirstAsync(Expression<Func<T, bool>> predicate) =>
+            await _context.Set<T>().FirstOrDefaultAsync(predicate);
 
         public async Task AddAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
-        public void Update(T entity) => _dbSet.Update(entity);
+
+        public async Task UpdateAsync(T entity) // ✅ التحديث هنا
+        {
+            _dbSet.Update(entity);
+            await _context.SaveChangesAsync();
+        }
 
         public void Delete(T entity) => _dbSet.Remove(entity);
     }
+
 }

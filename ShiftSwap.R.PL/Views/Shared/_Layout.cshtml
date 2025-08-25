@@ -52,7 +52,10 @@
                                 <span class="nav-link text-success">Welcome, @userName!</span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Logout</a>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="nav-link btn btn-link text-dark" style="padding: 0; border: none; background: none;">Logout</button>
+                                </form>
                             </li>
                         }
                         else
