@@ -4,75 +4,181 @@
     ViewData["Title"] = "Pending Swap Requests";
 }
 
-<h2 class="mb-4">@ViewData["Title"]</h2>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+        --raya-bg: #f7faff;
+    }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["Success"]
-    </div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["Error"]
-    </div>
-}
+    body {
+        background: var(--raya-bg);
+        font-family: 'Segoe UI', sans-serif;
+    }
 
-<table class="table table-bordered table-striped table-hover">
-    <thead class="table-dark">
-        <tr>
-            <th>Requestor</th>
-            <th>Target</th>
-            <th>Swap Date</th>
-            <th>Status</th>
-            <th>Comment</th>
-            <th>Approved By</th>
-            <th style="width: 200px;">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var req in Model)
-            {
+    h2 {
+        color: var(--raya-navy);
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    /* ===== Table Card ===== */
+    .raya-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+    }
+
+    /* ===== Table Styling ===== */
+    .raya-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+        .raya-table thead {
+            background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+            color: #fff;
+        }
+
+        .raya-table th {
+            padding: 14px;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+        }
+
+        .raya-table td {
+            background: #fff;
+            text-align: center;
+            vertical-align: middle;
+            padding: 14px;
+            border-top: 1px solid #eee;
+            font-size: 15px;
+        }
+
+        .raya-table tr:hover td {
+            background: #f0f8ff;
+        }
+
+    /* ===== Buttons ===== */
+    .btn-approve {
+        background: linear-gradient(135deg, #1e9e5e, #38ef7d);
+        border: none;
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+        .btn-approve:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 12px rgba(30,158,94,0.3);
+        }
+
+    .btn-reject {
+        background: linear-gradient(135deg, #e53935, #ff6f61);
+        border: none;
+        color: #fff;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+        .btn-reject:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 12px rgba(229,57,53,0.3);
+        }
+
+    /* ===== Alerts ===== */
+    .alert {
+        border-radius: 12px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+</style>
+
+<div class="container py-5">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success shadow-sm mb-3">
+            ✅ @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger shadow-sm mb-3">
+            ⚠️ @TempData["Error"]
+        </div>
+    }
+
+    <div class="raya-card">
+        <table class="raya-table">
+            <thead>
                 <tr>
-                    <td>@(req.RequestorName ?? "<i class='text-muted'>N/A</i>")</td>
-                    <td>@(req.TargetName ?? "<i class='text-muted'>N/A</i>")</td>
-                    <td>@req.SwapDate.ToShortDateString()</td>
-                    <td>@req.Status</td>
-                    <td>@req.Comment</td>
-                    <td>@(string.IsNullOrEmpty(req.ApprovedBy) ? "-" : req.ApprovedBy)</td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <form asp-action="ApproveOrReject" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="RequestId" value="@req.Id" />
-                                <input type="hidden" name="IsApproved" value="true" />
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    <i class="bi bi-check-circle"></i> Approve
-                                </button>
-                            </form>
-                            <form asp-action="ApproveOrReject" method="post" class="d-inline">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="RequestId" value="@req.Id" />
-                                <input type="hidden" name="IsApproved" value="false" />
-                                <button type="submit" class="btn btn-danger btn-sm">
-                                    <i class="bi bi-x-circle"></i> Reject
-                                </button>
-                            </form>
-                        </div>
-                    </td>
+                    <th>Requestor</th>
+                    <th>Target</th>
+                    <th>Swap Date</th>
+                    <th>Status</th>
+                    <th>Comment</th>
+                    <th>Approved By</th>
+                    <th style="width: 200px;">Actions</th>
                 </tr>
-            }
-        }
-        else
-        {
-            <tr>
-                <td colspan="7" class="text-center text-muted">
-                    No pending swap requests found.
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var req in Model)
+                    {
+                        <tr>
+                            <td>@(req.RequestorName ?? "<i class='text-muted'>N/A</i>")</td>
+                            <td>@(req.TargetName ?? "<i class='text-muted'>N/A</i>")</td>
+                            <td>@req.SwapDate.ToShortDateString()</td>
+                            <td>
+                                <span class="badge bg-info text-dark px-3 py-2 rounded-pill">@req.Status</span>
+                            </td>
+                            <td>@req.Comment</td>
+                            <td>@(string.IsNullOrEmpty(req.ApprovedBy) ? "-" : req.ApprovedBy)</td>
+                            <td>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="RequestId" value="@req.Id" />
+                                        <input type="hidden" name="IsApproved" value="true" />
+                                        <button type="submit" class="btn-approve">
+                                            ✅ Approve
+                                        </button>
+                                    </form>
+                                    <form asp-action="ApproveOrReject" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="RequestId" value="@req.Id" />
+                                        <input type="hidden" name="IsApproved" value="false" />
+                                        <button type="submit" class="btn-reject">
+                                            ❌ Reject
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No pending swap requests found.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

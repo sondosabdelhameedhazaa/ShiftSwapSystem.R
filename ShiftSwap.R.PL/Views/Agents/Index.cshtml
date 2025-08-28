@@ -3,62 +3,201 @@
 
 @{
     ViewData["Title"] = "Agents";
+
+    var isAgent = ViewBag.IsAgent != null && (bool)ViewBag.IsAgent;
+    var showSearchOnly = ViewBag.ShowSearchOnly != null && (bool)ViewBag.ShowSearchOnly;
+    var searchDate = ViewBag.SearchDate as string;
+    var searchShift = ViewBag.SearchShift as string;
 }
 
-<h1>Agents List</h1>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
 
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        margin-bottom: 25px;
+        background: #fff;
+    }
 
-<form asp-action="Index" method="get" class="mb-3 d-flex gap-2">
-    <input type="text" name="search" class="form-control"
-           placeholder="Search by Name, HRID, or LoginID"
-           value="@ViewBag.Search" />
-    <button type="submit" class="btn btn-primary">Search</button>
-    <a asp-action="Index" class="btn btn-secondary">Reset</a>
-</form>
+    .card-header {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        font-weight: 600;
+        padding: 15px 20px;
+        font-size: 1.3rem;
+    }
 
-<p>
-    <a asp-action="Create" class="btn btn-success">Add New Agent</a>
-</p>
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        color: white !important;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>HRID</th>
-            <th>LoginID</th>
-            <th>NTName</th>
-            <th>Role</th>
-            <th>Project</th>
-            <th>Team Leader</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
-        {
-            foreach (var agent in Model)
-            {
-                <tr>
-                    <td>@agent.Name</td>
-                    <td>@agent.HRID</td>
-                    <td>@agent.LoginID</td>
-                    <td>@agent.NTName</td>
-                    <td>@agent.Role</td>
-                    <td>@agent.ProjectName </td>
-                    <td>@agent.TeamLeaderName </td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@agent.Id" class="btn btn-info btn-sm">Details</a>
-                        @* <a asp-action="Edit" asp-route-id="@agent.Id" class="btn btn-warning btn-sm">Edit</a> *@
-                        @* <a asp-action="Delete" asp-route-id="@agent.Id" class="btn btn-danger btn-sm">Delete</a> *@
-                    </td>
-                </tr>
+        .btn-raya:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    .btn-details {
+        background: #fff;
+        border: 2px solid var(--raya-cyan);
+        color: var(--raya-navy);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+        .btn-details:hover {
+            background: var(--raya-cyan);
+            color: #fff;
+        }
+
+    table {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,.1);
+    }
+
+        table thead {
+            background: var(--raya-navy);
+            color: #fff;
+        }
+
+            table thead th {
+                padding: 12px;
+                font-weight: 600;
+                text-align: center;
             }
+
+        table tbody td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        table tbody tr:hover {
+            background: rgba(0,168,232,0.08);
+        }
+
+    .alert {
+        border-radius: 12px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        @(isAgent ? "Available Agents" : "Agents List")
+    </div>
+    <div class="card-body">
+        @if (isAgent)
+        {
+            <form asp-action="Index" method="get" class="mb-4 d-flex gap-2 flex-wrap">
+                <input type="date" name="date" class="form-control" value="@searchDate" required />
+                <button type="submit" class="btn-raya">🔍 Search</button>
+            </form>
         }
         else
         {
-            <tr>
-                <td colspan="8" class="text-center">No Agents Found</td>
-            </tr>
+            <form asp-action="Index" method="get" class="mb-4 d-flex gap-2 flex-wrap">
+                <input type="text" name="search" class="form-control"
+                       placeholder="Search by Name, HRID, or LoginID"
+                       value="@ViewBag.Search" />
+                <button type="submit" class="btn-raya">🔍 Search</button>
+                <a asp-action="Index" class="btn btn-secondary">Reset</a>
+            </form>
+
+            <p>
+                <a asp-action="Create" class="btn-raya">➕ Add New Agent</a>
+            </p>
         }
-    </tbody>
-</table>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>HRID</th>
+                            <th>LoginID</th>
+                            <th>NTName</th>
+                            <th>Role</th>
+                            <th>Project</th>
+                            <th>Team Leader</th>
+                            @if (isAgent)
+                            {
+                                <th>Shift Start</th>
+                                <th>Shift End</th>
+                                <th>Actions</th>
+                            }
+                            else
+                            {
+                                <th>Actions</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var agent in Model)
+                        {
+                            <tr>
+                                <td>@agent.Name</td>
+                                <td>@agent.HRID</td>
+                                <td>@agent.LoginID</td>
+                                <td>@agent.NTName</td>
+                                <td>@agent.Role</td>
+                                <td>@agent.ProjectName</td>
+                                <td>@agent.TeamLeaderName</td>
+
+                                @if (isAgent)
+                                {
+                                    <td>@agent.ShiftStart</td>
+                                    <td>@agent.ShiftEnd</td>
+                                    <td>
+                                        <a asp-controller="ShiftSwapRequest"
+                                           asp-action="Create"
+                                           asp-route-targetAgentId="@agent.Id"
+                                           class="btn btn-warning btn-sm">
+                                            🔄 Request Swap
+                                        </a>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@agent.Id" class="btn-details btn-sm">
+                                            ℹ️ Details
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else if (showSearchOnly)
+        {
+            <div class="alert alert-info mt-3">
+                Please select a date and shift to view available agents.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning mt-3">
+                No Agents Found.
+            </div>
+        }
+    </div>
+</div>

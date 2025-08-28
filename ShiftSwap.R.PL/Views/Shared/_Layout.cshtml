@@ -13,78 +13,154 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ShiftSwap.R.PL.styles.css" asp-append-version="true" />
+    <style>
+        :root {
+            --sidebar-w: 250px;
+            --raya-navy: #002147;
+            --raya-cyan: #00a8e8;
+        }
+
+        html, body {
+            height: 100%;
+            background: #f8f9fa;
+            margin: 0;
+        }
+
+        /* ====== Layout Grid (Sidebar pushes content) ====== */
+        .app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 0 1fr; /* closed */
+            transition: grid-template-columns .3s ease;
+        }
+
+            .app.open {
+                grid-template-columns: var(--sidebar-w) 1fr;
+            }
+        /* open */
+
+        /* ====== Sidebar ====== */
+        .sidebar {
+            background: var(--raya-navy);
+            color: #fff;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0,0,0,.15);
+        }
+
+            .sidebar .brand {
+                display: block;
+                text-align: center;
+                padding: 16px 12px;
+                font-weight: 700;
+                color: var(--raya-cyan);
+                text-decoration: none;
+            }
+
+            .sidebar .nav-link {
+                color: #ffffffcc;
+                padding: 10px 18px;
+                border-radius: 8px;
+                margin: 4px 10px;
+            }
+
+                .sidebar .nav-link:hover,
+                .sidebar .nav-link.active {
+                    background: var(--raya-cyan);
+                    color: #fff;
+                }
+
+        /* ====== Toggle button ====== */
+        .menu-toggle {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 2000; /* فوق كل حاجة */
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: var(--raya-navy);
+            color: #fff;
+            font-size: 18px;
+            box-shadow: 0 2px 6px rgba(0,0,0,.2);
+            cursor: pointer;
+        }
+
+        .app.open ~ .menu-toggle {
+            left: calc(var(--sidebar-w) + 16px); /* يتحرك يمين لما السايدبار يفتح */
+        }
+
+        /* ====== Main ====== */
+        /* ====== Main ====== */
+        .main {
+            padding: 24px;
+            padding-top: 70px; /* خلى الكلام ينزل تحت الزرار */
+        }
+
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ShiftSwap.R.PL</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Agents" asp-action="Index">Agents</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="ShiftSwapRequest" asp-action="Pending">Swap Requests</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="ShiftSwapRequest" asp-action="MyRequests" asp-route-agentId="1">My Requests</a>
-                        </li>
-                    </ul>
+    <!-- Grid wrapper -->
+    <div class="app" id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Home" asp-action="Index">ShiftSwap</a>
 
-                    <ul class="navbar-nav">
-                        @if (isLoggedIn)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link text-success">Welcome, @userName!</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="nav-link btn btn-link text-dark" style="padding: 0; border: none; background: none;">Logout</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+            <ul class="nav flex-column px-2">
+                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">🏠 Home</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="ShiftSchedule" asp-action="MySchedule">📅 My Schedule</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="ShiftSwapRequest" asp-action="MyRequests" asp-route-agentId="1">📌 My Requests</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="ShiftSwapRequest" asp-action="Pending">🔄 Swap Requests</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Agents" asp-action="Index">👥 Agents</a></li>
+                <li class="nav-item"><a class="nav-link" asp-controller="Projects" asp-action="Index">📂 Projects</a></li>
 
-    <div class="container">
-        <main role="main" class="pb-3">
+                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Privacy">🔒 Privacy</a></li>
+            </ul>
+
+            <hr class="border-light mx-3" />
+
+            <ul class="nav flex-column px-2">
+                @if (isLoggedIn)
+                {
+                    <li class="nav-item px-3"><span class="text-info">Welcome, @userName!</span></li>
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link btn btn-link text-white p-0">🚪 Logout</button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">🔑 Login</a></li>
+                }
+            </ul>
+        </aside>
+
+        <!-- Main content -->
+        <div class="main">
             @RenderBody()
-        </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - ShiftSwap.R.PL - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <!-- Toggle lives outside .app -->
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">☰</button>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            const app = document.getElementById('app');
+            const toggle = document.getElementById('menuToggle');
+
+            toggle.addEventListener('click', () => {
+                app.classList.toggle('open');
+            });
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+

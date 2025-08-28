@@ -106,6 +106,38 @@ namespace ShiftSwap.R.PL.Controllers
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         $"ShiftSchedule_Agent{agentId}.xlsx");
         }
+        public async Task<IActionResult> MySchedule(DateTime? selectedDate)
+        {
+            var loginId = HttpContext.Session.GetString("LoginID");
+            if (string.IsNullOrEmpty(loginId))
+                return RedirectToAction("Login", "Account");
+
+            var agent = await _agentRepo.FindFirstAsync(a => a.LoginID == loginId);
+            if (agent == null)
+                return NotFound("Agent not found");
+
+            var date = selectedDate ?? DateTime.Today;
+            var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, date, date);
+
+            var result = schedules.Select(s => new ShiftScheduleDto
+            {
+                Id = s.Id,
+                Date = s.Date,
+                ShiftStart = s.ShiftStart,
+                ShiftEnd = s.ShiftEnd,
+                Shift = s.Shift,
+                LOB = s.LOB,
+                Schedule = s.Schedule,
+                AgentId = s.AgentId,
+                AgentName = s.Agent?.Name
+            }).ToList();
+
+            ViewBag.SelectedDate = date.ToString("yyyy-MM-dd");
+            ViewBag.AgentName = agent.Name;
+
+            return View(result);
+        }
+
     }
 }
 

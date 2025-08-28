@@ -23,8 +23,25 @@ namespace ShiftSwap.R.BLL.Repositories
             await _context.Agents.Include(a => a.Project).FirstOrDefaultAsync(a => a.NTName == ntName);
 
         public async Task<IEnumerable<Agent>> GetAgentsByProjectAsync(int projectId) =>
-            await _context.Agents.Where(a => a.ProjectId == projectId).Include(a => a.Project).ToListAsync();
-    }
+            await _context.Agents
+                .Where(a => a.ProjectId == projectId)
+                .Include(a => a.Project)
+                .ToListAsync();
 
+
+        public async Task<IEnumerable<(Agent Agent, ShiftSchedule Schedule)>> GetAvailableAgentsWithShiftsAsync(DateTime date, int excludeAgentId)
+        {
+            var result = await _context.ShiftSchedules
+                .Include(s => s.Agent).ThenInclude(a => a.Project)
+                .Include(s => s.Agent).ThenInclude(a => a.TeamLeader)
+                .Where(s => s.Date.Date == date.Date && s.AgentId != excludeAgentId)
+                .Select(s => new { s.Agent, Schedule = s })
+                .ToListAsync();
+
+            return result.Select(r => (r.Agent, r.Schedule));
+        }
+
+    }
 }
+
 

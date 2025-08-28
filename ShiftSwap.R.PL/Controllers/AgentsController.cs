@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ShiftSwap.R.BLL.Interfaces;
 using ShiftSwap.R.DAL.Models;
+using ShiftSwap.R.DAL.Models.Enums;
 using ShiftSwap.R.PL.Dtos;
 
 namespace ShiftSwap.R.PL.Controllers
@@ -18,36 +19,64 @@ namespace ShiftSwap.R.PL.Controllers
             _mapper = mapper;
         }
 
-        public async Task<IActionResult> Index()
+        // عرض قائمة الوكلاء أو الوكلاء المتاحين في حالة Agent
+        public async Task<IActionResult> Index(DateTime? date)
         {
             var ntName = HttpContext.Session.GetString("UserName");
-
             if (string.IsNullOrEmpty(ntName))
                 return RedirectToAction("Login", "Account");
 
-            var allAgents = await _unitOfWork.Agents.GetAllAsync(includeProperties: "Project,TeamLeader");
-
-            var currentAgent = allAgents.FirstOrDefault(a => a.NTName.ToLower() == ntName.ToLower());
-
+            var currentAgent = await _unitOfWork.Agents.GetByNTNameAsync(ntName);
             if (currentAgent == null)
                 return RedirectToAction("Login", "Account");
 
-            var agentsInSameProject = allAgents
-                .Where(a => a.ProjectId == currentAgent.ProjectId && a.Id != currentAgent.Id)
-                .ToList();
+            ViewBag.IsAgent = currentAgent.Role == AgentRole.Agent;
+            ViewBag.SearchDate = date?.ToString("yyyy-MM-dd");
 
-            var agentDtos = _mapper.Map<IEnumerable<AgentReadDto>>(agentsInSameProject);
+            if (!date.HasValue)
+                return View(new List<AgentReadDto>());
+
+            // Get agents with shifts on that day excluding the current agent
+            var availableAgentsWithShifts = await _unitOfWork.Agents
+                .GetAvailableAgentsWithShiftsAsync(date.Value, currentAgent.Id);
+
+            // Filter only agents in the same project if current user is not an Agent
+            if (currentAgent.Role != AgentRole.Agent)
+            {
+                availableAgentsWithShifts = availableAgentsWithShifts
+                    .Where(x => x.Agent.ProjectId == currentAgent.ProjectId)
+                    .ToList();
+            }
+
+            var agentDtos = availableAgentsWithShifts.Select(tuple => new AgentReadDto
+            {
+                Id = tuple.Agent.Id,
+                Name = tuple.Agent.Name,
+                HRID = tuple.Agent.HRID,
+                LoginID = tuple.Agent.LoginID,
+                NTName = tuple.Agent.NTName,
+                Role = tuple.Agent.Role,
+                ProjectName = tuple.Agent.Project?.Name,
+                TeamLeaderName = tuple.Agent.TeamLeader?.Name,
+                ShiftStart = tuple.Schedule.ShiftStart,
+                ShiftEnd = tuple.Schedule.ShiftEnd,
+                Shift = tuple.Schedule.Shift
+            }).ToList();
+
             return View(agentDtos);
         }
 
+        // عرض تفاصيل الوكيل
         public async Task<IActionResult> Details(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
             if (agent == null) return NotFound();
+
             var agentDto = _mapper.Map<AgentDetailsDto>(agent);
             return View(agentDto);
         }
 
+        // إنشاء وكيل جديد
         public async Task<IActionResult> Create()
         {
             await PopulateDropdowns();
@@ -72,6 +101,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(createAgentDto);
         }
 
+        // تعديل وكيل
         public async Task<IActionResult> Edit(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -91,7 +121,7 @@ namespace ShiftSwap.R.PL.Controllers
             if (ModelState.IsValid)
             {
                 var agent = _mapper.Map<Agent>(editAgentDto);
-                await _unitOfWork.Agents.UpdateAsync(agent); // ✅ تم التعديل هنا
+                await _unitOfWork.Agents.UpdateAsync(agent);
                 await _unitOfWork.CompleteAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -100,6 +130,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(editAgentDto);
         }
 
+        // حذف وكيل
         public async Task<IActionResult> Delete(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -129,6 +160,7 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // تعبئة الـ Dropdowns الخاصة بالمشروعات والقادة
         private async Task PopulateDropdowns()
         {
             var projects = await _unitOfWork.Projects.GetAllAsync();
@@ -139,3 +171,4 @@ namespace ShiftSwap.R.PL.Controllers
         }
     }
 }
+

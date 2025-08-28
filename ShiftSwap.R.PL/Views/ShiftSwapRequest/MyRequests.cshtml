@@ -4,37 +4,129 @@
     ViewData["Title"] = "My Swap Requests";
 }
 
-<h2>@ViewData["Title"]</h2>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
+    body {
+        background: #f7faff;
+    }
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New Swap Request</a>
-</p>
+    h2 {
+        color: var(--raya-navy);
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Requestor</th>
-            <th>Target</th>
-            <th>Swap Date</th>
-            <th>Status</th>
-            <th>Comment</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var req in Model)
-        {
-            <tr>
-                <td>@req.RequestorName</td>     
-                <td>@req.TargetName</td>       
-                <td>@req.SwapDate.ToShortDateString()</td>
-                <td>@req.Status</td>
-                <td>@req.Comment</td>
-            </tr>
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 10px 20px;
+        font-weight: 600;
+        border-radius: 10px;
+        color: white !important;
+        transition: 0.3s ease;
+        text-decoration: none;
+    }
+
+        .btn-raya:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-    </tbody>
-</table>
+
+    .table {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        background: white;
+    }
+
+        .table thead {
+            background: var(--raya-navy);
+            color: white;
+        }
+
+        .table td, .table th {
+            vertical-align: middle;
+            padding: 12px 16px;
+        }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-pending {
+        background: #ffc107;
+        color: #333;
+    }
+
+    .badge-approved {
+        background: #28a745;
+        color: white;
+    }
+
+    .badge-rejected {
+        background: #dc3545;
+        color: white;
+    }
+</style>
+
+<div class="container py-4">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <p>
+        <a asp-action="Create" class="btn-raya">➕ Create New Swap Request</a>
+    </p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Requestor</th>
+                <th>Target</th>
+                <th>Swap Date</th>
+                <th>Status</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var req in Model)
+            {
+                <tr>
+                    <td>@req.RequestorName</td>
+                    <td>@req.TargetName</td>
+                    <td>@req.SwapDate.ToShortDateString()</td>
+                    <td>
+                        @if (req.Status == "Pending")
+                        {
+                            <span class="badge badge-pending">Pending</span>
+                        }
+                        else if (req.Status == "Approved")
+                        {
+                            <span class="badge badge-approved">Approved</span>
+                        }
+                        else if (req.Status == "Rejected")
+                        {
+                            <span class="badge badge-rejected">Rejected</span>
+                        }
+                        else
+                        {
+                            @req.Status
+                        }
+                    </td>
+                    <td>@req.Comment</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

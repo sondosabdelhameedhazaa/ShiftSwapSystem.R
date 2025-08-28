@@ -1,4 +1,5 @@
 ﻿using ShiftSwap.R.DAL.Models.Enums;
+using System;
 
 namespace ShiftSwap.R.PL.Dtos
 {
@@ -10,7 +11,12 @@ namespace ShiftSwap.R.PL.Dtos
         public string LoginID { get; set; }
         public string NTName { get; set; }
         public AgentRole Role { get; set; }
-        public string ProjectName { get; set; }
-        public string TeamLeaderName { get; set; }
+        public string? ProjectName { get; set; }
+        public string? TeamLeaderName { get; set; }
+
+        public TimeSpan? ShiftStart { get; set; }
+        public TimeSpan? ShiftEnd { get; set; }
+
+        public string? Shift { get; set; }
     }
 }

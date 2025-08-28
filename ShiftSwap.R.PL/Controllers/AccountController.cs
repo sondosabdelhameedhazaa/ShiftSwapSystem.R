@@ -47,7 +47,7 @@ namespace ShiftSwap.R.PL.Controllers
 
                 return agent.Role switch
                 {
-                    AgentRole.Agent => RedirectToAction("Index", "Agents"),
+                    AgentRole.Agent => RedirectToAction("MySchedule", "ShiftSchedule"),
                     AgentRole.TeamLeader => RedirectToAction("Pending", "ShiftSwapRequest"),
                     AgentRole.RTM => RedirectToAction("Pending", "ShiftSwapRequest"),
                     _ => RedirectToAction("Index", "Home")

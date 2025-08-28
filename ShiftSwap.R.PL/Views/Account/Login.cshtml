@@ -4,29 +4,90 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow-lg">
-            <div class="card-header bg-primary text-white text-center">
-                <h4>Login</h4>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f7faff, #e6f7ff);
+    }
+
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border-bottom: none;
+        padding: 20px;
+    }
+
+        .card-header h4 {
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--raya-navy);
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        transition: 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: var(--raya-cyan);
+            box-shadow: 0 0 6px rgba(0, 168, 232, 0.3);
+        }
+
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 10px;
+        color: white !important;
+        transition: 0.3s ease;
+    }
+
+        .btn-raya:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+</style>
+
+<div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header text-white text-center">
+                <h4>🔐 Login</h4>
             </div>
-            <div class="card-body">
+            <div class="card-body p-4">
                 <form asp-action="Login" method="post">
                     <div class="form-group mb-3">
                         <label asp-for="Name" class="form-label">Name</label>
-                        <input asp-for="Name" class="form-control" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <input asp-for="Name" class="form-control" placeholder="Enter your name" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
                     </div>
+
                     <div class="form-group mb-3">
                         <label asp-for="LoginID" class="form-label">Login ID</label>
-                        <input asp-for="LoginID" class="form-control" />
-                        <span asp-validation-for="LoginID" class="text-danger"></span>
+                        <input asp-for="LoginID" class="form-control" placeholder="Enter your Login ID" />
+                        <span asp-validation-for="LoginID" class="text-danger small"></span>
                     </div>
 
-                   
-
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <button type="submit" class="btn-raya">Login</button>
                     </div>
 
                     <div class="mt-3 text-danger text-center">

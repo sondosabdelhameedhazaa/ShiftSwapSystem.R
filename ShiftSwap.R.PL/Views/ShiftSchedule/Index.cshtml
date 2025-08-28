@@ -1,74 +1,196 @@
-﻿@model List<ShiftSwap.R.PL.Dtos.ShiftScheduleDto>
+﻿@model List<ShiftSwap.R.PL.Dtos.AgentReadDto>
 
 @{
-    ViewData["Title"] = "Shift Schedule";
-    var agentName = ViewBag.AgentName as string;
-    var agentId = Context.Request.Query["agentId"];
-    var fromDate = Context.Request.Query["fromDate"];
-    var toDate = Context.Request.Query["toDate"];
+    ViewData["Title"] = "Available Agents";
+    var selectedDate = ViewBag.SearchDate;
 }
 
-<h2>Shift Schedule for @agentName</h2>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
 
-<!-- Filter Form -->
-<form method="get" asp-controller="ShiftSchedule" asp-action="Index" class="mb-4">
-    <input type="hidden" name="agentId" value="@agentId" />
-    <div class="row">
-        <div class="col-md-3">
-            <label>From Date</label>
-            <input type="date" name="fromDate" class="form-control" value="@fromDate" />
-        </div>
-        <div class="col-md-3">
-            <label>To Date</label>
-            <input type="date" name="toDate" class="form-control" value="@toDate" />
-        </div>
-        <div class="col-md-3 align-self-end">
-            <button type="submit" class="btn btn-primary">Search</button>
-            <a class="btn btn-success" asp-action="DownloadExcel"
-               asp-route-agentId="@agentId"
-               asp-route-fromDate="@fromDate"
-               asp-route-toDate="@toDate">
-                Download Excel
-            </a>
-        </div>
+    h2, h4 {
+        color: var(--raya-navy);
+        font-weight: 700;
+    }
+
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        margin-bottom: 25px;
+        background: #fff;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        font-weight: 600;
+        padding: 15px 20px;
+    }
+
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        color: white !important;
+        font-weight: 600;
+        transition: 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+        .btn-raya:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    .btn-details {
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-weight: 600;
+        background: white;
+        border: 2px solid var(--raya-cyan);
+        color: var(--raya-navy);
+        transition: 0.3s ease;
+    }
+
+        .btn-details:hover {
+            background: var(--raya-cyan);
+            color: white;
+        }
+
+    .input-group .form-control {
+        border-radius: 0 10px 10px 0;
+        transition: 0.3s ease;
+    }
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+        font-size: 1.1rem;
+        background: #f8f9fa;
+    }
+
+    .form-control:focus {
+        box-shadow: 0 0 8px rgba(0,168,232,0.5);
+        border-color: var(--raya-cyan);
+    }
+
+    thead {
+        background: var(--raya-navy);
+        color: white;
+    }
+
+    tbody tr:hover {
+        background-color: #f2f8ff;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    .alert {
+        border-radius: 12px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Available Agents</h4>
     </div>
-</form>
+    <div class="card-body">
 
-@if (Model.Any())
-{
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Shift Start</th>
-                <th>Shift End</th>
-                <th>Shift</th>
-                <th>LOB</th>
-                <th>Schedule</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Date.ToString("yyyy-MM-dd")</td>
-                    <td>@item.ShiftStart</td>
-                    <td>@item.ShiftEnd</td>
-                    <td>@item.Shift</td>
-                    <td>@item.LOB</td>
-                    <td>@item.Schedule</td>
-                    <td>
-                        <a class="btn btn-sm btn-info" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">
-        No shift schedules available for this agent in the selected date range.
+        <!-- Search Form -->
+        <form method="get" asp-action="Index" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold text-dark">Select Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text">📅</span>
+                        <input type="date" name="date" class="form-control" value="@selectedDate" />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn-raya w-100">
+                        🔍 <span>Search</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Table or Alert -->
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>HRID</th>
+                            <th>Login ID</th>
+                            <th>NTName</th>
+                            <th>Role</th>
+                            <th>Project</th>
+                            <th>Team Leader</th>
+                            <th>Shift Time</th>
+                            <th>Shift Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var agent in Model)
+                        {
+                            <tr>
+                                <td>@agent.Name</td>
+                                <td>@agent.HRID</td>
+                                <td>@agent.LoginID</td>
+                                <td>@agent.NTName</td>
+                                <td>@agent.Role</td>
+                                <td>@agent.ProjectName</td>
+                                <td>@agent.TeamLeaderName</td>
+                                <td>
+                                    @if (agent.ShiftStart.HasValue && agent.ShiftEnd.HasValue)
+                                    {
+                                        @($"{agent.ShiftStart.Value:hh\\:mm} - {agent.ShiftEnd.Value:hh\\:mm}")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(agent.Shift))
+                                    {
+                                        <span class="badge bg-info text-dark">@agent.Shift</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@agent.Id" class="btn-details">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                No available agents for the selected date.
+            </div>
+        }
     </div>
-}
+</div>

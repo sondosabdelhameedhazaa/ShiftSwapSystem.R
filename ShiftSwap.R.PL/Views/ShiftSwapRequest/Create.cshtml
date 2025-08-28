@@ -5,54 +5,165 @@
     var agents = ViewBag.TargetAgents as List<SelectListItem>;
 }
 
-<h2 class="mb-4">@ViewData["Title"]</h2>
-@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+        --raya-bg: #f7faff;
+    }
 
-<form id="swapRequestForm" method="post">
-    <div class="form-group mb-3">
-        <label asp-for="TargetAgentId">Target Agent</label>
-        <select asp-for="TargetAgentId" class="form-control" asp-items="agents" id="targetAgentSelect">
-            <option value="">-- Select Agent --</option>
-        </select>
-        <span asp-validation-for="TargetAgentId" class="text-danger"></span>
+    body {
+        background: var(--raya-bg);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h2 {
+        color: var(--raya-navy);
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    /* ===== Card ===== */
+    .raya-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        transition: 0.3s ease;
+    }
+
+        .raya-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+        }
+
+    /* ===== Inputs with Icons ===== */
+    .input-group-text {
+        background: #f0f4fa;
+        border: 1px solid #ddd;
+        border-right: none;
+        color: var(--raya-navy);
+        font-size: 18px;
+        border-radius: 10px 0 0 10px;
+    }
+
+    .form-control {
+        border-radius: 0 10px 10px 0 !important;
+        border: 1px solid #ddd;
+        padding: 12px 14px;
+        transition: 0.2s ease;
+    }
+
+        .form-control:focus {
+            border-color: var(--raya-cyan);
+            box-shadow: 0 0 8px rgba(0,168,232,0.25);
+        }
+
+    label {
+        font-weight: 600;
+        color: var(--raya-navy);
+        margin-bottom: 6px;
+    }
+
+    /* ===== Buttons ===== */
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        padding: 12px 26px;
+        border-radius: 12px;
+        transition: 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+    }
+
+        .btn-raya:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+        }
+
+    .btn-cancel {
+        background: transparent;
+        color: var(--raya-navy);
+        border: 2px solid var(--raya-navy);
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 12px 24px;
+        transition: 0.3s ease;
+    }
+
+        .btn-cancel:hover {
+            background: var(--raya-navy);
+            color: #fff;
+        }
+
+    /* ===== Shift Info Card ===== */
+    .shift-info {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 6px 16px rgba(0,168,232,0.25);
+    }
+
+        .shift-info p {
+            margin: 0 0 6px;
+            font-size: 15px;
+        }
+</style>
+
+<div class="container py-5" style="max-width: 700px;">
+    <h2>@ViewData["Title"]</h2>
+    @Html.ValidationSummary(true, "", new { @class = "text-danger text-center mb-3" })
+
+    <!-- ✅ Shift Info -->
+    <div class="shift-info">
+        <p><strong>Your Shift:</strong> <span id="yourShiftInfo">9:00 AM - 6:00 PM</span></p>
+        <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">12:00 PM - 9:00 PM</span></p>
     </div>
 
-    <div class="form-group mb-3">
-        <label asp-for="SwapDate">Swap Date</label>
-        <input asp-for="SwapDate" type="date" class="form-control" id="swapDateInput" />
-        <span asp-validation-for="SwapDate" class="text-danger"></span>
-    </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Comment">Comment</label>
-        <textarea asp-for="Comment" class="form-control" rows="4" placeholder="Optional..."></textarea>
-        <span asp-validation-for="Comment" class="text-danger"></span>
-    </div>
-
-    <div class="d-flex justify-content-between">
-        <button type="button" class="btn btn-success" id="confirmSwapBtn">Submit</button>
-        <a asp-action="MyRequests" class="btn btn-secondary">Cancel</a>
-    </div>
-</form>
-
-<!-- Modal (Pop-up confirmation) -->
-<div class="modal fade" id="confirmSwapModal" tabindex="-1" aria-labelledby="confirmSwapModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Swap Request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- ✅ Form -->
+    <div class="raya-card">
+        <form id="swapRequestForm" asp-action="Create" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="TargetAgentId"> Target Agent</label>
+                <div class="input-group">
+                    <span class="input-group-text"></span>
+                    <select asp-for="TargetAgentId" class="form-control" asp-items="agents" id="targetAgentSelect">
+                        <option value="">-- Select Agent --</option>
+                    </select>
+                </div>
+                <span asp-validation-for="TargetAgentId" class="text-danger"></span>
             </div>
-            <div class="modal-body">
-                <p><strong>Your Shift:</strong> <span id="yourShiftInfo">9:00 AM - 6:00 PM</span></p>
-                <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">12:00 PM - 9:00 PM</span></p>
-                <p>Do you want to proceed with this shift swap request?</p>
+
+            <div class="form-group mb-3">
+                <label asp-for="SwapDate"> Swap Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"></span>
+                    <input asp-for="SwapDate" type="date" class="form-control" id="swapDateInput" />
+                </div>
+                <span asp-validation-for="SwapDate" class="text-danger"></span>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" form="swapRequestForm">Confirm</button>
+
+            <div class="form-group mb-4">
+                <label asp-for="Comment">💬 Comment</label>
+                <div class="input-group">
+                    <span class="input-group-text"></span>
+                    <textarea asp-for="Comment" class="form-control" rows="3" placeholder="Optional..."></textarea>
+                </div>
+                <span asp-validation-for="Comment" class="text-danger"></span>
             </div>
-        </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn-raya"> Submit</button>
+                <a asp-action="MyRequests" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -60,20 +171,10 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.getElementById("confirmSwapBtn").addEventListener("click", function () {
-            const targetAgent = document.getElementById("targetAgentSelect");
-            const swapDate = document.getElementById("swapDateInput");
-
-            if (!targetAgent.value || !swapDate.value) {
-                alert("Please select an agent and swap date.");
-                return;
-            }
-
+        document.getElementById("targetAgentSelect").addEventListener("change", function () {
+            const selectedAgent = this.options[this.selectedIndex].text;
             document.getElementById("yourShiftInfo").innerText = "9:00 AM - 6:00 PM";
-            document.getElementById("targetShiftInfo").innerText = "12:00 PM - 9:00 PM";
-
-            var modal = new bootstrap.Modal(document.getElementById("confirmSwapModal"));
-            modal.show();
+            document.getElementById("targetShiftInfo").innerText = selectedAgent + " → 12:00 PM - 9:00 PM";
         });
     </script>
 }

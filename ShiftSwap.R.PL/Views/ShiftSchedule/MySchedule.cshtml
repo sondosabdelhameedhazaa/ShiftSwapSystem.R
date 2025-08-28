@@ -1,0 +1,135 @@
+﻿@model List<ShiftSwap.R.PL.Dtos.ShiftScheduleDto>
+
+@{
+    ViewData["Title"] = "My Schedule";
+    var selectedDate = ViewBag.SelectedDate ?? DateTime.Today.ToString("yyyy-MM-dd");
+    var agentName = ViewBag.AgentName as string;
+}
+
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
+
+    h2 {
+        color: var(--raya-navy);
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        margin-bottom: 25px;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        font-weight: 600;
+        padding: 15px 20px;
+    }
+
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        color: white !important;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+        .btn-raya:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    thead {
+        background: var(--raya-navy);
+        color: white;
+    }
+
+    tbody tr:hover {
+        background-color: #f2f8ff;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    .alert {
+        border-radius: 12px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">Schedule for @agentName</h4>
+    </div>
+    <div class="card-body">
+        <form method="get" asp-action="MySchedule" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Select Date</label>
+                    <input type="date" name="selectedDate" value="@selectedDate" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn-raya w-100"> Show</button>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Shift Start</th>
+                            <th>Shift End</th>
+                            <th>Shift</th>
+                            <th>LOB</th>
+                            <th>Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                                <td>@item.ShiftStart</td>
+                                <td>@item.ShiftEnd</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.Shift))
+                                    {
+                                        <span class="badge bg-info text-dark">@item.Shift</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </td>
+                                <td>@item.LOB</td>
+                                <td>@item.Schedule</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                No shifts found for the selected date.
+            </div>
+        }
+    </div>
+</div>

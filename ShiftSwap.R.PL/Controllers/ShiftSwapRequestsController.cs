@@ -29,6 +29,7 @@ namespace ShiftSwap.R.PL.Controllers
             _mapper = mapper;
         }
 
+        // عرض الطلبات المعلقة
         public async Task<IActionResult> Pending()
         {
             var requests = await _shiftSwapRepo.GetPendingRequestsAsync();
@@ -36,6 +37,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(dto);
         }
 
+        // عرض الطلبات الخاصة بالوكيل الحالي
         public async Task<IActionResult> MyRequests()
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -51,6 +53,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(dto);
         }
 
+        // GET: إنشاء طلب جديد
         public async Task<IActionResult> Create(int? targetAgentId)
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -67,7 +70,8 @@ namespace ShiftSwap.R.PL.Controllers
                 .Select(a => new SelectListItem
                 {
                     Value = a.Id.ToString(),
-                    Text = a.Name
+                    Text = a.Name,
+                    Selected = (targetAgentId.HasValue && a.Id == targetAgentId.Value) // تحديد المختار
                 }).ToList();
 
             if (!targetAgents.Any())
@@ -83,6 +87,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(createDto);
         }
 
+        // POST: إنشاء طلب جديد
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ShiftSwapRequestCreateDto createDto)
@@ -136,6 +141,8 @@ namespace ShiftSwap.R.PL.Controllers
             TempData["Success"] = "Swap request created successfully.";
             return RedirectToAction(nameof(MyRequests));
         }
+
+        // POST: الموافقة أو الرفض
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveOrReject(ShiftSwapRequestApprovalDto approvalDto)
@@ -156,7 +163,7 @@ namespace ShiftSwap.R.PL.Controllers
             request.Comment = approvalDto.Comment ?? "";
             request.ApprovedById = approver.Id;
 
-            await _shiftSwapRepo.UpdateAsync(request); 
+            await _shiftSwapRepo.UpdateAsync(request);
 
             TempData["Success"] = approvalDto.IsApproved
                 ? "Swap request approved successfully."
@@ -165,6 +172,7 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(Pending));
         }
 
+        // تحميل الـ form مرة أخرى مع البيانات
         private async Task<IActionResult> LoadFormAgain(ShiftSwapRequestCreateDto createDto, int? requestorId)
         {
             if (requestorId.HasValue)
@@ -177,7 +185,8 @@ namespace ShiftSwap.R.PL.Controllers
                     .Select(a => new SelectListItem
                     {
                         Value = a.Id.ToString(),
-                        Text = a.Name
+                        Text = a.Name,
+                        Selected = (a.Id == createDto.TargetAgentId)
                     }).ToList();
 
                 ViewBag.TargetAgents = targetAgents;
@@ -191,4 +200,3 @@ namespace ShiftSwap.R.PL.Controllers
         }
     }
 }
-
