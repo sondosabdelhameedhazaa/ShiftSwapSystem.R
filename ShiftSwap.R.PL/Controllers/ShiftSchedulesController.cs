@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http;
 
 namespace ShiftSwap.R.PL.Controllers
 {
@@ -106,7 +107,9 @@ namespace ShiftSwap.R.PL.Controllers
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         $"ShiftSchedule_Agent{agentId}.xlsx");
         }
-        public async Task<IActionResult> MySchedule(DateTime? selectedDate)
+
+        // GET: ShiftSchedule/MySchedule
+        public async Task<IActionResult> MySchedule(string? week, DateTime? day)
         {
             var loginId = HttpContext.Session.GetString("LoginID");
             if (string.IsNullOrEmpty(loginId))
@@ -116,8 +119,49 @@ namespace ShiftSwap.R.PL.Controllers
             if (agent == null)
                 return NotFound("Agent not found");
 
-            var date = selectedDate ?? DateTime.Today;
-            var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, date, date);
+            var today = DateTime.Today;
+
+            // نحسب الأسبوع الحالي وعدد أسابيع السنة
+            var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
+            int currentWeek = calendar.GetWeekOfYear(today,
+                System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Sunday);
+
+            int totalWeeks = calendar.GetWeekOfYear(new DateTime(today.Year, 12, 31),
+                System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Sunday);
+
+            int selectedWeek;
+
+            if (string.IsNullOrEmpty(week) || week == "this")
+            {
+                selectedWeek = currentWeek; // This week
+            }
+            else if (week == "next")
+            {
+                selectedWeek = currentWeek + 1; // Next week
+                if (selectedWeek > totalWeeks) selectedWeek = totalWeeks;
+            }
+            else if (int.TryParse(week, out int parsedWeek)) 
+            {
+                selectedWeek = Math.Min(Math.Max(1, parsedWeek), totalWeeks);
+            }
+            else
+            {
+                selectedWeek = currentWeek;
+            }
+
+            DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
+            DateTime endOfWeek = startOfWeek.AddDays(4); 
+
+            var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, startOfWeek, endOfWeek);
+
+            if (day.HasValue)
+            {
+                schedules = schedules.Where(s => s.Date.Date == day.Value.Date).ToList();
+                startOfWeek = day.Value.Date;
+                endOfWeek = day.Value.Date;
+            }
 
             var result = schedules.Select(s => new ShiftScheduleDto
             {
@@ -132,11 +176,33 @@ namespace ShiftSwap.R.PL.Controllers
                 AgentName = s.Agent?.Name
             }).ToList();
 
-            ViewBag.SelectedDate = date.ToString("yyyy-MM-dd");
             ViewBag.AgentName = agent.Name;
+            ViewBag.StartDate = startOfWeek.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = endOfWeek.ToString("yyyy-MM-dd");
+            ViewBag.SelectedWeek = selectedWeek;
+            ViewBag.CurrentWeek = currentWeek;
+            ViewBag.TotalWeeks = totalWeeks;
 
             return View(result);
         }
+
+        private DateTime FirstDateOfWeek(int year, int weekOfYear)
+        {
+            DateTime jan1 = new DateTime(year, 1, 1);
+            int daysOffset = DayOfWeek.Sunday - jan1.DayOfWeek;
+
+            DateTime firstSunday = jan1.AddDays(daysOffset);
+            var cal = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
+            int firstWeek = cal.GetWeekOfYear(jan1,
+                System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Sunday);
+
+            if (firstWeek <= 1)
+                weekOfYear -= 1;
+
+            return firstSunday.AddDays(weekOfYear * 7);
+        }
+
 
     }
 }

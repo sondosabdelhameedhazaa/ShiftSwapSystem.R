@@ -5,7 +5,6 @@ using ShiftSwap.R.DAL.Models.Enums;
 using ShiftSwap.R.BLL.Interfaces;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace ShiftSwap.R.PL.Controllers
 {
@@ -18,13 +17,16 @@ namespace ShiftSwap.R.PL.Controllers
             _agentRepo = agentRepo;
         }
 
+        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
 
+        // POST: /Account/Login
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -40,11 +42,13 @@ namespace ShiftSwap.R.PL.Controllers
 
             if (agent != null)
             {
+                // Save session data
                 HttpContext.Session.SetString("UserRole", agent.Role.ToString());
                 HttpContext.Session.SetString("UserProject", agent.Project?.Name ?? "");
                 HttpContext.Session.SetString("UserName", agent.NTName ?? agent.Name);
                 HttpContext.Session.SetString("LoginID", agent.LoginID);
 
+                // Redirect based on role
                 return agent.Role switch
                 {
                     AgentRole.Agent => RedirectToAction("MySchedule", "ShiftSchedule"),
@@ -54,10 +58,12 @@ namespace ShiftSwap.R.PL.Controllers
                 };
             }
 
+            // Invalid login
             ModelState.AddModelError("", "Invalid credentials. Please check your Login ID and Name.");
             return View(loginDto);
         }
 
+        // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Logout()

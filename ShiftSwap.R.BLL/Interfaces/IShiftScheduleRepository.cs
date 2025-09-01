@@ -9,7 +9,6 @@ namespace ShiftSwap.R.BLL.Interfaces
     {
         Task<IEnumerable<ShiftSchedule>> GetByAgentIdAsync(int agentId);
         Task<IEnumerable<ShiftSchedule>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, int projectId);
-
         Task<IEnumerable<ShiftSchedule>> GetSchedulesForAgentAsync(int agentId, DateTime? fromDate = null, DateTime? toDate = null);
     }
 }

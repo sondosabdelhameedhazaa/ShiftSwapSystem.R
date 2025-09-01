@@ -14,7 +14,7 @@ namespace ShiftSwap.R.BLL.Interfaces
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<T> FindFirstAsync(Expression<Func<T, bool>> predicate);
         Task AddAsync(T entity);
-        Task UpdateAsync(T entity); // ✅ هنا
+        Task UpdateAsync(T entity); 
         void Delete(T entity);
     }
 

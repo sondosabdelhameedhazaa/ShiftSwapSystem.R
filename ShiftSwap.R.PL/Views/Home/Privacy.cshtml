@@ -1,6 +1,104 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+        --raya-light: #e6f7ff;
+    }
+
+    body {
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f9fbff;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    .privacy-hero {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+        border-radius: 0 0 40px 40px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+
+        .privacy-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .privacy-hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+    .privacy-content {
+        max-width: 900px;
+        margin: 60px auto;
+        padding: 30px 40px;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+
+        .privacy-content h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--raya-navy);
+            margin-bottom: 15px;
+        }
+
+        .privacy-content p {
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .privacy-content ul {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+
+            .privacy-content ul li {
+                margin-bottom: 10px;
+                font-size: 1rem;
+                color: #444;
+            }
+</style>
+
+<div class="privacy-hero">
+    <h1>@ViewData["Title"]</h1>
+    <p>Your privacy matters to us. Here’s how we handle your information.</p>
+</div>
+
+<div class="privacy-content">
+    <h2>Information We Collect</h2>
+    <p>
+        We may collect personal details such as your name, Login ID, and shift data
+        to help provide and improve the Shift Swap services.
+    </p>
+
+    <h2>How We Use Your Information</h2>
+    <p>
+        Your information is used only to manage shift schedules, swap requests, and ensure
+        smooth team operations.
+    </p>
+
+    <h2>Your Rights</h2>
+    <ul>
+        <li>Access your personal data upon request</li>
+        <li>Request corrections to inaccurate data</li>
+        <li>Request deletion of your data, where applicable</li>
+    </ul>
+
+    <h2>Contact Us</h2>
+    <p>
+        If you have any questions about this Privacy Policy, please reach out to our support team.
+    </p>
+</div>

@@ -21,7 +21,7 @@ namespace ShiftSwap.R.DAL.Models
         public int? TeamLeaderId { get; set; }        // Team Leader FK
         public Agent TeamLeader { get; set; }         // Navigation to TL
 
-        public ICollection<ShiftSchedule> ShiftSchedules { get; set; }  // Weekly Shifts
+        public ICollection<ShiftSchedule> ShiftSchedules { get; set; }  
         public ICollection<ShiftSwapRequest> SentSwapRequests { get; set; }      
         public ICollection<ShiftSwapRequest> ReceivedSwapRequests { get; set; }  
     }

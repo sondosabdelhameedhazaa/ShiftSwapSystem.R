@@ -19,8 +19,7 @@ namespace ShiftSwap.R.PL.Controllers
             _mapper = mapper;
         }
 
-        // عرض قائمة الوكلاء أو الوكلاء المتاحين في حالة Agent
-        public async Task<IActionResult> Index(DateTime? date)
+        public async Task<IActionResult> Index(DateTime? date, string shiftFrom, string shiftTo)
         {
             var ntName = HttpContext.Session.GetString("UserName");
             if (string.IsNullOrEmpty(ntName))
@@ -32,13 +31,27 @@ namespace ShiftSwap.R.PL.Controllers
 
             ViewBag.IsAgent = currentAgent.Role == AgentRole.Agent;
             ViewBag.SearchDate = date?.ToString("yyyy-MM-dd");
+            ViewBag.SearchShiftFrom = shiftFrom;
+            ViewBag.SearchShiftTo = shiftTo;
 
             if (!date.HasValue)
                 return View(new List<AgentReadDto>());
 
+            // تحويل الوقت من string لـ TimeSpan
+            // بدل القيمة الافتراضية، نخليها nullable
+            TimeSpan? shiftFromTime = TimeSpan.TryParse(shiftFrom, out var tempFrom) ? tempFrom : (TimeSpan?)null;
+            TimeSpan? shiftToTime = TimeSpan.TryParse(shiftTo, out var tempTo) ? tempTo : (TimeSpan?)null;
+
             // Get agents with shifts on that day excluding the current agent
             var availableAgentsWithShifts = await _unitOfWork.Agents
                 .GetAvailableAgentsWithShiftsAsync(date.Value, currentAgent.Id);
+
+            // Filter by shift times
+            availableAgentsWithShifts = availableAgentsWithShifts
+    .Where(a => (!shiftFromTime.HasValue || a.Schedule.ShiftStart >= shiftFromTime.Value)
+             && (!shiftToTime.HasValue || a.Schedule.ShiftEnd <= shiftToTime.Value))
+    .ToList();
+
 
             // Filter only agents in the same project if current user is not an Agent
             if (currentAgent.Role != AgentRole.Agent)
@@ -66,7 +79,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(agentDtos);
         }
 
-        // عرض تفاصيل الوكيل
         public async Task<IActionResult> Details(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -76,7 +88,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(agentDto);
         }
 
-        // إنشاء وكيل جديد
         public async Task<IActionResult> Create()
         {
             await PopulateDropdowns();
@@ -101,7 +112,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(createAgentDto);
         }
 
-        // تعديل وكيل
         public async Task<IActionResult> Edit(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -130,7 +140,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(editAgentDto);
         }
 
-        // حذف وكيل
         public async Task<IActionResult> Delete(int id)
         {
             var agent = await _unitOfWork.Agents.GetByIdAsync(id);
@@ -160,7 +169,6 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // تعبئة الـ Dropdowns الخاصة بالمشروعات والقادة
         private async Task PopulateDropdowns()
         {
             var projects = await _unitOfWork.Projects.GetAllAsync();

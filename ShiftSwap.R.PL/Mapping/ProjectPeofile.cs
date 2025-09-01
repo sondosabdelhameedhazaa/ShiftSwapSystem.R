@@ -8,21 +8,21 @@ namespace ShiftSwap.R.PL.Mapping
     {
         public ProjectProfile()
         {
-            // ✅ Project → ProjectReadDto (لعرض قائمة المشاريع)
+            //  Project → ProjectReadDto 
             CreateMap<Project, ProjectReadDto>()
                 .ForMember(dest => dest.AgentCount, opt => opt.MapFrom(src => src.Agents.Count));
 
-            // ✅ Project → ProjectDetailsDto (لعرض تفاصيل المشروع)
+            //  Project → ProjectDetailsDto 
             CreateMap<Project, ProjectDetailsDto>()
                 .ForMember(dest => dest.Agents, opt => opt.MapFrom(src => src.Agents));
 
-            // ✅ Agent → AgentInProjectDto (لربط العملاء داخل التفاصيل)
+            //  Agent → AgentInProjectDto 
             CreateMap<Agent, AgentInProjectDto>();
 
-            // ✅ CreateProjectDto → Project (لإنشاء مشروع جديد)
+            //  CreateProjectDto → Project 
             CreateMap<CreateProjectDto, Project>();
 
-            // ✅ EditProjectDto ↔ Project (للتعديل)
+            //  EditProjectDto ↔ Project 
             CreateMap<Project, EditProjectDto>().ReverseMap();
         }
     }

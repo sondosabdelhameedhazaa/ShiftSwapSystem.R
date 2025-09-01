@@ -1,4 +1,5 @@
-﻿@using ShiftSwap.R.PL.Dtos
+﻿@using System.Globalization
+@using ShiftSwap.R.PL.Dtos
 @model IEnumerable<AgentReadDto>
 
 @{
@@ -6,8 +7,15 @@
 
     var isAgent = ViewBag.IsAgent != null && (bool)ViewBag.IsAgent;
     var showSearchOnly = ViewBag.ShowSearchOnly != null && (bool)ViewBag.ShowSearchOnly;
-    var searchDate = ViewBag.SearchDate as string;
-    var searchShift = ViewBag.SearchShift as string;
+    var searchDateString = ViewBag.SearchDate as string;
+    DateTime searchDate;
+    if (!DateTime.TryParse(searchDateString, out searchDate))
+    {
+        searchDate = DateTime.Today;
+    }
+
+    var searchShiftFrom = ViewBag.SearchShiftFrom as string ?? "08:00";
+    var searchShiftTo = ViewBag.SearchShiftTo as string ?? "17:00";
 }
 
 <style>
@@ -94,6 +102,24 @@
         border-radius: 12px;
         font-weight: 500;
     }
+
+    /* تحسين شكل الفورم */
+    .search-form .form-group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0;
+    }
+
+    .search-form .form-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+    }
+
+    .search-form button {
+        align-self: flex-end;
+        margin-top: 22px;
+    }
 </style>
 
 <div class="card">
@@ -103,9 +129,33 @@
     <div class="card-body">
         @if (isAgent)
         {
-            <form asp-action="Index" method="get" class="mb-4 d-flex gap-2 flex-wrap">
-                <input type="date" name="date" class="form-control" value="@searchDate" required />
-                <button type="submit" class="btn-raya">🔍 Search</button>
+            <form asp-action="Index" method="get" class="mb-4 d-flex gap-3 flex-wrap search-form">
+                <div class="form-group">
+                    <label for="dateInput" class="form-label"> Date</label>
+                    <input id="dateInput" type="date" name="date" class="form-control"
+                           value="@(searchDate.ToString("yyyy-MM-dd"))" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="shiftFromInput" class="form-label">Shift From</label>
+                    <input id="shiftFromInput" type="time" name="shiftFrom" class="form-control shift-input"
+                           value="@(!string.IsNullOrEmpty(ViewBag.SearchShiftFrom as string) ? ViewBag.SearchShiftFrom : "")"
+                           placeholder="HH:mm" />
+                </div>
+
+                <div class="form-group">
+                    <label for="shiftToInput" class="form-label">Shift To</label>
+                    <input id="shiftToInput" type="time" name="shiftTo" class="form-control shift-input"
+                           value="@(!string.IsNullOrEmpty(ViewBag.SearchShiftTo as string) ? ViewBag.SearchShiftTo : "")"
+                           placeholder="HH:mm" />
+                </div>
+
+
+
+
+                <div class="form-group">
+                    <button type="submit" class="btn-raya"> Search</button>
+                </div>
             </form>
         }
         else
@@ -168,6 +218,7 @@
                                         <a asp-controller="ShiftSwapRequest"
                                            asp-action="Create"
                                            asp-route-targetAgentId="@agent.Id"
+                                           asp-route-swapDate="@searchDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)"
                                            class="btn btn-warning btn-sm">
                                             🔄 Request Swap
                                         </a>

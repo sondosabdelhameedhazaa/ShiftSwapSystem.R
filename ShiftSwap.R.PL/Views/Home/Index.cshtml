@@ -2,7 +2,174 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+        --raya-light: #e6f7ff;
+    }
+
+    body {
+        font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f9fbff;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        text-align: center;
+        padding: 60px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero-section::after {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            z-index: 1;
+            letter-spacing: -1px;
+        }
+
+        .hero-section p {
+            font-size: 1.3rem;
+            margin-bottom: 35px;
+            color: #f0f8ff;
+            z-index: 1;
+        }
+
+    /* Buttons */
+    .btn-raya {
+        background: white;
+        color: var(--raya-navy);
+        font-weight: 600;
+        padding: 14px 34px;
+        border-radius: 40px;
+        border: none;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        margin: 10px;
+        display: inline-block;
+        font-size: 1.05rem;
+        position: relative;
+        z-index: 1;
+    }
+
+        .btn-raya:hover {
+            background: var(--raya-cyan);
+            color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+            transform: translateY(-3px);
+        }
+
+    /* Features Section */
+    .features {
+        padding: 80px 20px;
+        background: #fff;
+    }
+
+        .features h2 {
+            text-align: center;
+            font-weight: 800;
+            font-size: 2.2rem;
+            color: var(--raya-navy);
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+            .features h2::after {
+                content: "";
+                display: block;
+                width: 80px;
+                height: 4px;
+                background: var(--raya-cyan);
+                margin: 15px auto 0;
+                border-radius: 2px;
+            }
+
+    .feature-card {
+        border-radius: 18px;
+        padding: 30px 25px;
+        text-align: center;
+        transition: 0.3s ease;
+        background: var(--raya-light);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background: #fff;
+        }
+
+        .feature-card h4 {
+            color: var(--raya-navy);
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+</style>
+
+<div class="hero-section">
+    <h1>Welcome to Raya</h1>
+    <p>Shift Swap Portal for Agents</p>
+
+    <div>
+        <a asp-controller="Account" asp-action="Login" class="btn-raya">🔑 Login</a>
+    </div>
 </div>
+
+<div class="features">
+    <h2>Our Values</h2>
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h4>🚀 Innovation</h4>
+                    <p>We embrace technology to deliver cutting-edge solutions that empower our clients.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h4>🤝 Commitment</h4>
+                    <p>Dedicated teams ensuring quality service and seamless customer experience.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <h4>🌟 Excellence</h4>
+                    <p>We strive to exceed expectations and build long-lasting partnerships.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

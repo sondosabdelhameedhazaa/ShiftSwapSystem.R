@@ -33,5 +33,12 @@ namespace ShiftSwap.R.BLL.Repositories
                                  .Include(r => r.ApprovedBy) 
                                  .ToListAsync();
         }
+        public async Task<IEnumerable<ShiftSwapRequest>> GetByDateAsync(DateTime date)
+        {
+            return await _context.ShiftSwapRequests
+                .Where(r => r.SwapDate.Date == date.Date)
+                .ToListAsync();
+        }
+
     }
 }

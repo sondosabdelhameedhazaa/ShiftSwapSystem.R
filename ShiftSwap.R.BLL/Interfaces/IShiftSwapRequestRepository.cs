@@ -6,5 +6,7 @@ namespace ShiftSwap.R.BLL.Interfaces
     {
         Task<IEnumerable<ShiftSwapRequest>> GetPendingRequestsAsync();
         Task<IEnumerable<ShiftSwapRequest>> GetByAgentIdAsync(int agentId);
+        Task<IEnumerable<ShiftSwapRequest>> GetByDateAsync(DateTime date);
+
     }
 }

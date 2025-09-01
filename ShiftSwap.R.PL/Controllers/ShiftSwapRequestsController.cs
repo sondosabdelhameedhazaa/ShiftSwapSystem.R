@@ -17,19 +17,21 @@ namespace ShiftSwap.R.PL.Controllers
     {
         private readonly IShiftSwapRequestRepository _shiftSwapRepo;
         private readonly IAgentRepository _agentRepo;
+        private readonly IShiftScheduleRepository _shiftScheduleRepo;
         private readonly IMapper _mapper;
 
         public ShiftSwapRequestController(
             IShiftSwapRequestRepository shiftSwapRepo,
             IAgentRepository agentRepo,
+            IShiftScheduleRepository shiftScheduleRepo,
             IMapper mapper)
         {
             _shiftSwapRepo = shiftSwapRepo;
             _agentRepo = agentRepo;
+            _shiftScheduleRepo = shiftScheduleRepo;
             _mapper = mapper;
         }
 
-        // عرض الطلبات المعلقة
         public async Task<IActionResult> Pending()
         {
             var requests = await _shiftSwapRepo.GetPendingRequestsAsync();
@@ -37,7 +39,6 @@ namespace ShiftSwap.R.PL.Controllers
             return View(dto);
         }
 
-        // عرض الطلبات الخاصة بالوكيل الحالي
         public async Task<IActionResult> MyRequests()
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -53,8 +54,8 @@ namespace ShiftSwap.R.PL.Controllers
             return View(dto);
         }
 
-        // GET: إنشاء طلب جديد
-        public async Task<IActionResult> Create(int? targetAgentId)
+        // GET: Create Swap Request
+        public async Task<IActionResult> Create(int targetAgentId, DateTime? swapDate)
         {
             var ntName = HttpContext.Session.GetString("UserName");
             if (string.IsNullOrEmpty(ntName))
@@ -64,32 +65,41 @@ namespace ShiftSwap.R.PL.Controllers
             if (currentAgent == null)
                 return Unauthorized("Agent not found in the system.");
 
-            var agentsInSameProject = await _agentRepo.GetAgentsByProjectAsync(currentAgent.ProjectId);
-            var targetAgents = agentsInSameProject
-                .Where(a => a.Id != currentAgent.Id)
-                .Select(a => new SelectListItem
-                {
-                    Value = a.Id.ToString(),
-                    Text = a.Name,
-                    Selected = (targetAgentId.HasValue && a.Id == targetAgentId.Value) // تحديد المختار
-                }).ToList();
+            var targetAgent = await _agentRepo.GetByIdAsync(targetAgentId);
+            if (targetAgent == null)
+                return NotFound("Target agent not found.");
 
-            if (!targetAgents.Any())
-                TempData["Error"] = "No available agents in your project to swap with.";
+            ViewBag.TargetAgents = new List<SelectListItem>
+    {
+        new SelectListItem
+        {
+            Value = targetAgent.Id.ToString(),
+            Text = targetAgent.Name,
+            Selected = true
+        }
+    };
 
-            ViewBag.TargetAgents = targetAgents;
+            // استخدم التاريخ اللي جايلك أو اليوم لو null
+            var selectedDate = swapDate ?? DateTime.Today;
+
+            var yourShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(currentAgent.Id, selectedDate, selectedDate)).FirstOrDefault();
+            var targetShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(targetAgent.Id, selectedDate, selectedDate)).FirstOrDefault();
+
+            ViewBag.YourShift = yourShift != null ? $"{yourShift.ShiftStart:hh\\:mm} - {yourShift.ShiftEnd:hh\\:mm}" : "";
+            ViewBag.TargetShift = targetShift != null ? $"{targetShift.ShiftStart:hh\\:mm} - {targetShift.ShiftEnd:hh\\:mm}" : "";
 
             var createDto = new ShiftSwapRequestCreateDto
             {
-                TargetAgentId = targetAgentId ?? 0
+                TargetAgentId = targetAgent.Id,
+                SwapDate = selectedDate
             };
 
             return View(createDto);
         }
 
-        // POST: إنشاء طلب جديد
         [HttpPost]
         [ValidateAntiForgeryToken]
+       
         public async Task<IActionResult> Create(ShiftSwapRequestCreateDto createDto)
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -98,38 +108,33 @@ namespace ShiftSwap.R.PL.Controllers
 
             var requestor = await _agentRepo.GetByNTNameAsync(ntName);
             if (requestor == null)
-            {
-                ModelState.AddModelError("", "Agent not found in the system.");
-                return await LoadFormAgain(createDto, null);
-            }
+                return await LoadFormAgain(createDto, null, "Agent not found in the system.");
 
             var target = await _agentRepo.GetByIdAsync(createDto.TargetAgentId);
             if (target == null)
-            {
-                ModelState.AddModelError("", "Target agent not found.");
-                return await LoadFormAgain(createDto, requestor.Id);
-            }
+                return await LoadFormAgain(createDto, requestor.Id, "Target agent not found.");
 
+             // same project
             if (requestor.ProjectId != target.ProjectId)
-            {
-                ModelState.AddModelError("", "Swap requests must be within the same project.");
-                return await LoadFormAgain(createDto, requestor.Id);
-            }
+                return await LoadFormAgain(createDto, requestor.Id, "Swap requests must be within the same project.");
 
-            if (createDto.SwapDate.Date < DateTime.Now.Date)
-            {
-                ModelState.AddModelError("", "You cannot create a swap request for a past date.");
-                return await LoadFormAgain(createDto, requestor.Id);
-            }
+            // in future
+            if (createDto.SwapDate.Date <= DateTime.Now.Date)
+                return await LoadFormAgain(createDto, requestor.Id, "Swap date must be in the future.");
 
-            if (createDto.SwapDate.Date == DateTime.Now.Date)
-            {
-                ModelState.AddModelError("", "You cannot create a swap request for today.");
-                return await LoadFormAgain(createDto, requestor.Id);
-            }
+            var existingSwaps = await _shiftSwapRepo.GetByDateAsync(createDto.SwapDate.Date);
 
-            if (!ModelState.IsValid)
-                return await LoadFormAgain(createDto, requestor.Id);
+            var agentsAlreadyInSwaps = existingSwaps
+                .Where(r => r.Status == SwapStatus.Pending || r.Status == SwapStatus.Approved)
+                .SelectMany(r => new[] { r.RequestorAgentId, r.TargetAgentId })
+                .Distinct()
+                .ToList();
+
+            // no transaction if he swap with another agent
+            if (agentsAlreadyInSwaps.Contains(requestor.Id) || agentsAlreadyInSwaps.Contains(target.Id))
+            {
+                return await LoadFormAgain(createDto, requestor.Id, "Please find another agent");
+            }
 
             var swapRequest = _mapper.Map<ShiftSwapRequest>(createDto);
             swapRequest.RequestorAgentId = requestor.Id;
@@ -142,7 +147,6 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(MyRequests));
         }
 
-        // POST: الموافقة أو الرفض
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ApproveOrReject(ShiftSwapRequestApprovalDto approvalDto)
@@ -172,8 +176,7 @@ namespace ShiftSwap.R.PL.Controllers
             return RedirectToAction(nameof(Pending));
         }
 
-        // تحميل الـ form مرة أخرى مع البيانات
-        private async Task<IActionResult> LoadFormAgain(ShiftSwapRequestCreateDto createDto, int? requestorId)
+        private async Task<IActionResult> LoadFormAgain(ShiftSwapRequestCreateDto createDto, int? requestorId, string? errorMessage = null)
         {
             if (requestorId.HasValue)
             {
@@ -196,7 +199,51 @@ namespace ShiftSwap.R.PL.Controllers
                 ViewBag.TargetAgents = new List<SelectListItem>();
             }
 
+            if (!string.IsNullOrEmpty(errorMessage))
+                ModelState.AddModelError("", errorMessage);
+
+            var today = createDto.SwapDate.Date;
+            var currentAgent = await _agentRepo.GetByNTNameAsync(HttpContext.Session.GetString("UserName"));
+            if (currentAgent != null)
+            {
+                var yourShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(currentAgent.Id, today, today)).FirstOrDefault();
+                ViewBag.YourShift = yourShift != null
+                    ? $"{yourShift.ShiftStart:hh\\:mm} - {yourShift.ShiftEnd:hh\\:mm}"
+                    : "";
+            }
+
+            if (createDto.TargetAgentId > 0)
+            {
+                var targetShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(createDto.TargetAgentId, today, today)).FirstOrDefault();
+                ViewBag.TargetShift = targetShift != null
+                    ? $"{targetShift.ShiftStart:hh\\:mm} - {targetShift.ShiftEnd:hh\\:mm}"
+                    : "";
+            }
+            else
+            {
+                ViewBag.TargetShift = "";
+            }
+
             return View("Create", createDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetShifts(int targetAgentId, DateTime swapDate)
+        {
+            var ntName = HttpContext.Session.GetString("UserName");
+            if (string.IsNullOrEmpty(ntName))
+                return Json(new { yourShift = "", targetShift = "" });
+
+            var currentAgent = await _agentRepo.GetByNTNameAsync(ntName);
+
+            var yourShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(currentAgent.Id, swapDate, swapDate)).FirstOrDefault();
+            var targetShift = (await _shiftScheduleRepo.GetSchedulesForAgentAsync(targetAgentId, swapDate, swapDate)).FirstOrDefault();
+
+            return Json(new
+            {
+                yourShift = yourShift != null ? $"{yourShift.ShiftStart:hh\\:mm} - {yourShift.ShiftEnd:hh\\:mm}" : "",
+                targetShift = targetShift != null ? $"{targetShift.ShiftStart:hh\\:mm} - {targetShift.ShiftEnd:hh\\:mm}" : ""
+            });
         }
     }
 }

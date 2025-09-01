@@ -3,7 +3,10 @@
 @{
     ViewData["Title"] = "Create Swap Request";
     var agents = ViewBag.TargetAgents as List<SelectListItem>;
+    var yourShift = ViewBag.YourShift as string ?? "";
+    var targetShift = ViewBag.TargetShift as string ?? "";
 }
+
 
 <style>
     :root {
@@ -24,7 +27,6 @@
         text-align: center;
     }
 
-    /* ===== Card ===== */
     .raya-card {
         background: #fff;
         border-radius: 16px;
@@ -38,7 +40,6 @@
             box-shadow: 0 8px 22px rgba(0,0,0,0.12);
         }
 
-    /* ===== Inputs with Icons ===== */
     .input-group-text {
         background: #f0f4fa;
         border: 1px solid #ddd;
@@ -66,7 +67,6 @@
         margin-bottom: 6px;
     }
 
-    /* ===== Buttons ===== */
     .btn-raya {
         background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
         border: none;
@@ -101,7 +101,6 @@
             color: #fff;
         }
 
-    /* ===== Shift Info Card ===== */
     .shift-info {
         background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
         color: white;
@@ -117,26 +116,31 @@
         }
 </style>
 
+
+
+
+
+
+
 <div class="container py-5" style="max-width: 700px;">
     <h2>@ViewData["Title"]</h2>
     @Html.ValidationSummary(true, "", new { @class = "text-danger text-center mb-3" })
 
-    <!-- ✅ Shift Info -->
     <div class="shift-info">
-        <p><strong>Your Shift:</strong> <span id="yourShiftInfo">9:00 AM - 6:00 PM</span></p>
-        <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">12:00 PM - 9:00 PM</span></p>
+        <p><strong>Your Shift:</strong> <span id="yourShiftInfo">@ViewBag.YourShift</span></p>
+        <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">@ViewBag.TargetShift</span></p>
     </div>
 
-    <!-- ✅ Form -->
     <div class="raya-card">
         <form id="swapRequestForm" asp-action="Create" method="post">
             <div class="form-group mb-3">
                 <label asp-for="TargetAgentId"> Target Agent</label>
                 <div class="input-group">
                     <span class="input-group-text"></span>
-                    <select asp-for="TargetAgentId" class="form-control" asp-items="agents" id="targetAgentSelect">
-                        <option value="">-- Select Agent --</option>
+                    <select asp-for="TargetAgentId" class="form-control" asp-items="ViewBag.TargetAgents" id="targetAgentSelect" readonly>
                     </select>
+
+
                 </div>
                 <span asp-validation-for="TargetAgentId" class="text-danger"></span>
             </div>
@@ -145,7 +149,9 @@
                 <label asp-for="SwapDate"> Swap Date</label>
                 <div class="input-group">
                     <span class="input-group-text"></span>
-                    <input asp-for="SwapDate" type="date" class="form-control" id="swapDateInput" />
+                    <input asp-for="SwapDate" type="date" class="form-control"
+                           value="@Model.SwapDate.ToString("yyyy-MM-dd")" readonly />
+
                 </div>
                 <span asp-validation-for="SwapDate" class="text-danger"></span>
             </div>
@@ -171,10 +177,22 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        document.getElementById("targetAgentSelect").addEventListener("change", function () {
-            const selectedAgent = this.options[this.selectedIndex].text;
-            document.getElementById("yourShiftInfo").innerText = "9:00 AM - 6:00 PM";
-            document.getElementById("targetShiftInfo").innerText = selectedAgent + " → 12:00 PM - 9:00 PM";
-        });
+        function updateShifts() {
+            const targetAgentId = document.getElementById("targetAgentSelect").value;
+            const swapDate = document.getElementById("swapDateInput").value;
+
+            if (!targetAgentId || !swapDate) return;
+
+            fetch(`/ShiftSwapRequest/GetShifts?targetAgentId=${targetAgentId}&swapDate=${swapDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("yourShiftInfo").innerText = data.yourShift;
+                    document.getElementById("targetShiftInfo").innerText = data.targetShift;
+                })
+                .catch(err => console.error(err));
+        }
+
+        document.getElementById("targetAgentSelect").addEventListener("change", updateShifts);
+        document.getElementById("swapDateInput").addEventListener("change", updateShifts);
     </script>
 }
