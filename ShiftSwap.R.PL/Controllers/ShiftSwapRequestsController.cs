@@ -97,9 +97,10 @@ namespace ShiftSwap.R.PL.Controllers
             return View(createDto);
         }
 
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-       
         public async Task<IActionResult> Create(ShiftSwapRequestCreateDto createDto)
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -114,28 +115,31 @@ namespace ShiftSwap.R.PL.Controllers
             if (target == null)
                 return await LoadFormAgain(createDto, requestor.Id, "Target agent not found.");
 
-             // same project
+            // Ensure same project
             if (requestor.ProjectId != target.ProjectId)
                 return await LoadFormAgain(createDto, requestor.Id, "Swap requests must be within the same project.");
 
-            // in future
+            // Ensure swap date is in the future
             if (createDto.SwapDate.Date <= DateTime.Now.Date)
                 return await LoadFormAgain(createDto, requestor.Id, "Swap date must be in the future.");
 
+            // Get all swaps for that date
             var existingSwaps = await _shiftSwapRepo.GetByDateAsync(createDto.SwapDate.Date);
 
-            var agentsAlreadyInSwaps = existingSwaps
-                .Where(r => r.Status == SwapStatus.Pending || r.Status == SwapStatus.Approved)
+            // Check only Pending swaps
+            var agentsInPendingSwaps = existingSwaps
+                .Where(r => r.Status == SwapStatus.Pending)
                 .SelectMany(r => new[] { r.RequestorAgentId, r.TargetAgentId })
                 .Distinct()
                 .ToList();
 
-            // no transaction if he swap with another agent
-            if (agentsAlreadyInSwaps.Contains(requestor.Id) || agentsAlreadyInSwaps.Contains(target.Id))
+            // Prevent swap if either agent is already in a Pending swap
+            if (agentsInPendingSwaps.Contains(requestor.Id) || agentsInPendingSwaps.Contains(createDto.TargetAgentId))
             {
                 return await LoadFormAgain(createDto, requestor.Id, "Please find another agent");
             }
 
+            // Create new swap request
             var swapRequest = _mapper.Map<ShiftSwapRequest>(createDto);
             swapRequest.RequestorAgentId = requestor.Id;
             swapRequest.TargetAgentId = target.Id;
@@ -146,6 +150,8 @@ namespace ShiftSwap.R.PL.Controllers
             TempData["Success"] = "Swap request created successfully.";
             return RedirectToAction(nameof(MyRequests));
         }
+
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

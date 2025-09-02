@@ -41,10 +41,12 @@ namespace ShiftSwap.R.PL.Controllers
                 LOB = s.LOB,
                 Schedule = s.Schedule,
                 AgentId = s.AgentId,
-                AgentName = s.Agent?.Name
+                AgentName = s.Agent?.Name,
+                AgentHRID = s.Agent?.HRID // جديد
             }).ToList();
 
             ViewBag.AgentName = schedules.FirstOrDefault()?.Agent?.Name ?? "Agent";
+            ViewBag.AgentHRID = schedules.FirstOrDefault()?.Agent?.HRID ?? "";
 
             return View(result);
         }
@@ -66,7 +68,8 @@ namespace ShiftSwap.R.PL.Controllers
                 LOB = schedule.LOB,
                 Schedule = schedule.Schedule,
                 AgentId = schedule.AgentId,
-                AgentName = schedule.Agent?.Name
+                AgentName = schedule.Agent?.Name,
+                AgentHRID = schedule.Agent?.HRID // جديد
             };
 
             return View(dto);
@@ -121,7 +124,6 @@ namespace ShiftSwap.R.PL.Controllers
 
             var today = DateTime.Today;
 
-            // نحسب الأسبوع الحالي وعدد أسابيع السنة
             var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
             int currentWeek = calendar.GetWeekOfYear(today,
                 System.Globalization.CalendarWeekRule.FirstFourDayWeek,
@@ -132,27 +134,19 @@ namespace ShiftSwap.R.PL.Controllers
                 DayOfWeek.Sunday);
 
             int selectedWeek;
-
             if (string.IsNullOrEmpty(week) || week == "this")
-            {
-                selectedWeek = currentWeek; // This week
-            }
+                selectedWeek = currentWeek;
             else if (week == "next")
             {
-                selectedWeek = currentWeek + 1; // Next week
-                if (selectedWeek > totalWeeks) selectedWeek = totalWeeks;
+                selectedWeek = Math.Min(currentWeek + 1, totalWeeks);
             }
-            else if (int.TryParse(week, out int parsedWeek)) 
-            {
+            else if (int.TryParse(week, out int parsedWeek))
                 selectedWeek = Math.Min(Math.Max(1, parsedWeek), totalWeeks);
-            }
             else
-            {
                 selectedWeek = currentWeek;
-            }
 
             DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
-            DateTime endOfWeek = startOfWeek.AddDays(4); 
+            DateTime endOfWeek = startOfWeek.AddDays(4);
 
             var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, startOfWeek, endOfWeek);
 
@@ -173,10 +167,12 @@ namespace ShiftSwap.R.PL.Controllers
                 LOB = s.LOB,
                 Schedule = s.Schedule,
                 AgentId = s.AgentId,
-                AgentName = s.Agent?.Name
+                AgentName = s.Agent?.Name,
+                AgentHRID = s.Agent?.HRID // جديد
             }).ToList();
 
             ViewBag.AgentName = agent.Name;
+            ViewBag.AgentHRID = agent.HRID; // جديد
             ViewBag.StartDate = startOfWeek.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endOfWeek.ToString("yyyy-MM-dd");
             ViewBag.SelectedWeek = selectedWeek;
@@ -202,8 +198,5 @@ namespace ShiftSwap.R.PL.Controllers
 
             return firstSunday.AddDays(weekOfYear * 7);
         }
-
-
     }
 }
-

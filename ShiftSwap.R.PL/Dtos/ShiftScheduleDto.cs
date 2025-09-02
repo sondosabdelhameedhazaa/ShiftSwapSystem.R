@@ -13,7 +13,9 @@ namespace ShiftSwap.R.PL.Dtos
         public string Schedule { get; set; }
 
         public int AgentId { get; set; }
-        public string AgentName { get; set; } 
+        public string AgentName { get; set; }
+        public string AgentHRID { get; set; } 
+
     }
 }
 

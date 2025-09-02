@@ -109,14 +109,26 @@
             <a class="brand" asp-controller="Home" asp-action="Index">ShiftSwap</a>
 
             <ul class="nav flex-column px-2">
-                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">🏠 Home</a></li>
+                @* <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">🏠 Home</a></li> *@
                 <li class="nav-item"><a class="nav-link" asp-controller="ShiftSchedule" asp-action="MySchedule">📅 My Schedule</a></li>
                 <li class="nav-item"><a class="nav-link" asp-controller="ShiftSwapRequest" asp-action="MyRequests" asp-route-agentId="1">📌 My Requests</a></li>
-                <li class="nav-item"><a class="nav-link" asp-controller="ShiftSwapRequest" asp-action="Pending">🔄 Swap Requests</a></li>
+
+                @{
+                    var userRole = HttpContextAccessor.HttpContext?.Session.GetString("UserRole");
+                }
+
+                @if (userRole == "TeamLeader" || userRole == "RTM")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="ShiftSwapRequest" asp-action="Pending">🔄 Swap Requests</a>
+                    </li>
+                }
+
+
                 <li class="nav-item"><a class="nav-link" asp-controller="Agents" asp-action="Index">👥 Agents</a></li>
                 @* <li class="nav-item"><a class="nav-link" asp-controller="Projects" asp-action="Index">📂 Projects</a></li> *@
 
-                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Privacy">🔒 Privacy</a></li>
+                @* <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Privacy">🔒 Privacy</a></li> *@
             </ul>
 
             <hr class="border-light mx-3" />

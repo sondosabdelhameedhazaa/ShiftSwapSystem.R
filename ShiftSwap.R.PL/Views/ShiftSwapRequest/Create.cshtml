@@ -8,6 +8,7 @@
 }
 
 
+
 <style>
     :root {
         --raya-navy: #002147;
@@ -121,37 +122,32 @@
 
 
 
-
 <div class="container py-5" style="max-width: 700px;">
     <h2>@ViewData["Title"]</h2>
     @Html.ValidationSummary(true, "", new { @class = "text-danger text-center mb-3" })
 
     <div class="shift-info">
-        <p><strong>Your Shift:</strong> <span id="yourShiftInfo">@ViewBag.YourShift</span></p>
-        <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">@ViewBag.TargetShift</span></p>
+        <p><strong>Your Shift:</strong> <span id="yourShiftInfo">@yourShift</span></p>
+        <p><strong>Target Agent's Shift:</strong> <span id="targetShiftInfo">@targetShift</span></p>
     </div>
 
     <div class="raya-card">
         <form id="swapRequestForm" asp-action="Create" method="post">
             <div class="form-group mb-3">
-                <label asp-for="TargetAgentId"> Target Agent</label>
+                <label asp-for="TargetAgentId">Target Agent</label>
                 <div class="input-group">
                     <span class="input-group-text"></span>
-                    <select asp-for="TargetAgentId" class="form-control" asp-items="ViewBag.TargetAgents" id="targetAgentSelect" readonly>
+                    <select asp-for="TargetAgentId" class="form-control" asp-items="ViewBag.TargetAgents" id="targetAgentSelect">
                     </select>
-
-
                 </div>
                 <span asp-validation-for="TargetAgentId" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="SwapDate"> Swap Date</label>
+                <label asp-for="SwapDate">Swap Date</label>
                 <div class="input-group">
                     <span class="input-group-text"></span>
-                    <input asp-for="SwapDate" type="date" class="form-control"
-                           value="@Model.SwapDate.ToString("yyyy-MM-dd")" readonly />
-
+                    <input asp-for="SwapDate" type="date" class="form-control" value="@Model.SwapDate.ToString("yyyy-MM-dd")" readonly />
                 </div>
                 <span asp-validation-for="SwapDate" class="text-danger"></span>
             </div>
@@ -166,7 +162,7 @@
             </div>
 
             <div class="d-flex justify-content-between">
-                <button type="submit" class="btn-raya"> Submit</button>
+                <button type="submit" class="btn-raya">Submit</button>
                 <a asp-action="MyRequests" class="btn-cancel">Cancel</a>
             </div>
         </form>
@@ -179,7 +175,7 @@
     <script>
         function updateShifts() {
             const targetAgentId = document.getElementById("targetAgentSelect").value;
-            const swapDate = document.getElementById("swapDateInput").value;
+            const swapDate = document.getElementById("SwapDate").value;
 
             if (!targetAgentId || !swapDate) return;
 
@@ -193,6 +189,5 @@
         }
 
         document.getElementById("targetAgentSelect").addEventListener("change", updateShifts);
-        document.getElementById("swapDateInput").addEventListener("change", updateShifts);
     </script>
 }

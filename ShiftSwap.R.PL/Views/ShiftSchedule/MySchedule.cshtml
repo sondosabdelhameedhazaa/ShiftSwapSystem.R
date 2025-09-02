@@ -3,10 +3,12 @@
 @{
     ViewData["Title"] = "My Schedule";
     var agentName = ViewBag.AgentName as string;
-    var startDate = ViewBag.StartDate as string;
-    var endDate = ViewBag.EndDate as string;
+    var agentHRID = ViewBag.AgentHRID as string;
+    var startDate = DateTime.Parse(ViewBag.StartDate as string);
+    var endDate = DateTime.Parse(ViewBag.EndDate as string);
     var selectedWeek = ViewBag.Week as string ?? "this";
 }
+
 
 <style>
     :root {
@@ -80,12 +82,15 @@
     }
 </style>
 
+
+
 <div class="card">
     <div class="card-header">
-        <h4 class="mb-0">Schedule for @agentName</h4>
-        <small class="d-block">(@startDate → @endDate)</small>
+        <h4 class="mb-0">Schedule for @agentName (@agentHRID)</h4>
+        <small class="d-block">(@startDate.ToString("dd-MMMM-yyyy") → @endDate.ToString("dd-MMMM-yyyy"))</small>
     </div>
     <div class="card-body">
+        <!-- form البحث -->
         <form method="get" asp-action="MySchedule" class="mb-4">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -133,15 +138,15 @@
                             <th>Date</th>
                             <th>Shift Start</th>
                             <th>Shift End</th>
+                            <th>Agent Name</th>
+                            <th>HRID</th>
                             <th>LOB</th>
                         </tr>
                     </thead>
                     <tbody>
                         @{
-                            var start = DateTime.Parse(startDate);
-                            var end = DateTime.Parse(endDate);
-                            var daysOfWeek = Enumerable.Range(0, (end - start).Days + 1)
-                            .Select(offset => start.AddDays(offset))
+                            var daysOfWeek = Enumerable.Range(0, (endDate - startDate).Days + 1)
+                            .Select(offset => startDate.AddDays(offset))
                             .ToList();
 
                             foreach (var day in daysOfWeek)
@@ -153,9 +158,11 @@
                                     foreach (var item in shiftsForDay)
                                     {
                                         <tr>
-                                            <td>@item.Date.ToString("yyyy-MM-dd")</td>
-                                            <td>@item.ShiftStart</td>
-                                            <td>@item.ShiftEnd</td>
+                                            <td>@item.Date.ToString("dd-MMMM-yyyy")</td>
+                                            <td>@item.ShiftStart.ToString(@"hh\:mm")</td>
+                                            <td>@item.ShiftEnd.ToString(@"hh\:mm")</td>
+                                            <td>@item.AgentName</td>
+                                            <td>@item.AgentHRID</td>
                                             <td>@item.LOB</td>
                                         </tr>
                                     }
@@ -163,8 +170,8 @@
                                 else
                                 {
                                     <tr>
-                                        <td>@day.ToString("yyyy-MM-dd")</td>
-                                        <td colspan="3" class="text-center text-muted">No shift scheduled</td>
+                                        <td>@day.ToString("dd-MMMM-yyyy")</td>
+                                        <td colspan="5" class="text-center text-muted">No shift scheduled</td>
                                     </tr>
                                 }
                             }
