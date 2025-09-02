@@ -10,7 +10,7 @@ namespace ShiftSwap.R.DAL.Data
     {
         public static void Seed(ShiftSwapDbContext context)
         {
-            
+            // ===== إنشاء المشروع =====
             var project = context.Projects.FirstOrDefault(p => p.Name == "Gm-Onstar");
             if (project == null)
             {
@@ -19,6 +19,7 @@ namespace ShiftSwap.R.DAL.Data
                 context.SaveChanges();
             }
 
+            // ===== إنشاء Agents =====
             var agent1 = context.Agents.FirstOrDefault(a => a.HRID == "119546") ?? new Agent
             {
                 Name = "Alaa eldin Mahmoud Ghaly, Mariam",
@@ -49,12 +50,26 @@ namespace ShiftSwap.R.DAL.Data
                 ProjectId = project.Id
             };
 
+            // ===== إنشاء Team Leader TL1 =====
+            var teamLeader = context.Agents.FirstOrDefault(a => a.HRID == "TL1") ?? new Agent
+            {
+                Name = "Team Leader TL1",
+                HRID = "TL1",
+                LoginID = "tl1@rayacx.com",
+                NTName = "tl1",
+                Role = AgentRole.TeamLeader,
+                ProjectId = project.Id
+            };
+
+            // إضافة كل الـ Agents إذا لم يكونوا موجودين
             if (agent1.Id == 0) context.Agents.Add(agent1);
             if (agent2.Id == 0) context.Agents.Add(agent2);
             if (agent3.Id == 0) context.Agents.Add(agent3);
+            if (teamLeader.Id == 0) context.Agents.Add(teamLeader);
 
             context.SaveChanges();
 
+            // ===== إعداد الشفتات =====
             var agents = new[]
             {
                 new { Agent = agent1, ShiftStart = new TimeSpan(7,0,0), ShiftEnd = new TimeSpan(16,0,0), ShiftType = "Original" },
@@ -62,10 +77,9 @@ namespace ShiftSwap.R.DAL.Data
                 new { Agent = agent3, ShiftStart = new TimeSpan(9,0,0), ShiftEnd = new TimeSpan(18,0,0), ShiftType = "Swapped" }
             };
 
-            // 10 weeks + 1
-                 var today = DateTime.Today;
+            var today = DateTime.Today;
             var currentSunday = today.AddDays(-(int)today.DayOfWeek);
-            var weeks = Enumerable.Range(-10, 12) 
+            var weeks = Enumerable.Range(-10, 12)
                 .Select(offset => currentSunday.AddDays(offset * 7))
                 .ToList();
 
@@ -74,7 +88,6 @@ namespace ShiftSwap.R.DAL.Data
                 for (int dayOffset = 0; dayOffset < 5; dayOffset++)
                 {
                     var date = weekStart.AddDays(dayOffset);
-
                     foreach (var a in agents)
                     {
                         if (!context.ShiftSchedules.Any(s => s.Date.Date == date.Date && s.AgentId == a.Agent.Id))
@@ -98,13 +111,14 @@ namespace ShiftSwap.R.DAL.Data
                 }
             }
 
-            // make them at same project to test 
+            // ===== تأكد كل الـ Agents مرتبطين بنفس المشروع =====
             var agentsToAddOrUpdate = new[]
             {
-    new { HRID = "119546", Name = "Alaa eldin Mahmoud Ghaly, Mariam", LoginID = "agent1@rayacx.com", NTName = "agent1" },
-    new { HRID = "134057", Name = "Ali, Adham", LoginID = "agent2@rayacx.com", NTName = "agent2" },
-    new { HRID = "93358", Name = "Hassan Mohamed Khaled, Nourhan", LoginID = "agent3@rayacx.com", NTName = "agent3" }
-};
+                new { HRID = "119546", Name = agent1.Name, LoginID = agent1.LoginID, NTName = agent1.NTName },
+                new { HRID = "134057", Name = agent2.Name, LoginID = agent2.LoginID, NTName = agent2.NTName },
+                new { HRID = "93358", Name = agent3.Name, LoginID = agent3.LoginID, NTName = agent3.NTName },
+                new { HRID = "TL1", Name = teamLeader.Name, LoginID = teamLeader.LoginID, NTName = teamLeader.NTName }
+            };
 
             foreach (var a in agentsToAddOrUpdate)
             {
@@ -117,7 +131,7 @@ namespace ShiftSwap.R.DAL.Data
                         HRID = a.HRID,
                         LoginID = a.LoginID,
                         NTName = a.NTName,
-                        Role = AgentRole.Agent,
+                        Role = a.HRID == "TL1" ? AgentRole.TeamLeader : AgentRole.Agent,
                         ProjectId = project.Id
                     };
                     context.Agents.Add(agent);
@@ -133,11 +147,6 @@ namespace ShiftSwap.R.DAL.Data
             }
 
             context.SaveChanges();
-
-
-            context.SaveChanges();
         }
     }
 }
-
-

@@ -1,8 +1,7 @@
 ﻿@model List<ShiftSwap.R.PL.Dtos.ShiftScheduleDto>
 @{
-    ViewData["Title"] = "My Schedule";
-    var agentName = ViewBag.AgentName as string;
-    var agentHRID = ViewBag.AgentHRID as string;
+    ViewData["Title"] = "Team Schedule";
+    var teamLeaderName = ViewBag.TeamLeaderName as string;
     var startDate = DateTime.Parse(ViewBag.StartDate as string);
     var endDate = DateTime.Parse(ViewBag.EndDate as string);
     var selectedWeek = ViewBag.SelectedWeek as int? ?? 0;
@@ -81,17 +80,13 @@
     }
 </style>
 
-
-
-
-
 <div class="card">
     <div class="card-header">
-        <h4 class="mb-0">Schedule for @agentName (@agentHRID)</h4>
+        <h4 class="mb-0">Team Schedule for @teamLeaderName</h4>
         <small class="d-block">(@startDate.ToString("dd-MMMM-yyyy") → @endDate.ToString("dd-MMMM-yyyy"))</small>
     </div>
     <div class="card-body">
-        <form method="get" asp-action="MySchedule" class="mb-4">
+        <form method="get" asp-action="TeamSchedule" class="mb-4">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label fw-semibold mb-2">Select Week</label>
@@ -120,16 +115,20 @@
                     <thead>
                         <tr>
                             <th>Date</th>
+                            <th>Agent Name</th>
+                            <th>HRID</th>
                             <th>Shift Start</th>
                             <th>Shift End</th>
                             <th>LOB</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(s => s.Date))
+                        @foreach (var item in Model.OrderBy(s => s.Date).ThenBy(s => s.AgentName))
                         {
                             <tr>
                                 <td>@item.Date.ToString("dd-MMMM-yyyy")</td>
+                                <td>@item.AgentName</td>
+                                <td>@item.AgentHRID</td>
                                 <td>@item.ShiftStart.ToString(@"hh\:mm")</td>
                                 <td>@item.ShiftEnd.ToString(@"hh\:mm")</td>
                                 <td>@item.LOB</td>

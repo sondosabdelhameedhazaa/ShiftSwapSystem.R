@@ -12,6 +12,7 @@
 
     body {
         background: #f7faff;
+        font-family: 'Segoe UI', sans-serif;
     }
 
     h2 {
@@ -77,14 +78,46 @@
     }
 </style>
 
-
-
 <div class="container py-4">
     <h2>@ViewData["Title"]</h2>
 
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    @* ===== Form for Team Leader Direct Swap ===== *@
+    @if (ViewBag.TeamAgents != null && ViewBag.TeamAgents.Count > 0)
+    {
+        <div class="mb-4">
+            <form asp-action="TLDirectSwap" method="post" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Requestor</label>
+                    <select name="requestorId" class="form-select">
+                        @foreach (var agent in ViewBag.TeamAgents)
+                        {
+                            <option value="@agent.Id">@agent.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Target</label>
+                    <select name="targetId" class="form-select">
+                        @foreach (var agent in ViewBag.TeamAgents)
+                        {
+                            <option value="@agent.Id">@agent.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Swap Date</label>
+                    <input type="date" name="swapDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn-raya w-100">Swap Now</button>
+                </div>
+            </form>
+        </div>
     }
 
     <table class="table table-striped">

@@ -49,13 +49,15 @@ namespace ShiftSwap.R.PL.Controllers
                 HttpContext.Session.SetString("LoginID", agent.LoginID);
 
                 // Redirect based on role
+                // Redirect based on role
                 return agent.Role switch
                 {
                     AgentRole.Agent => RedirectToAction("MySchedule", "ShiftSchedule"),
-                    AgentRole.TeamLeader => RedirectToAction("Pending", "ShiftSwapRequest"),
+                    AgentRole.TeamLeader => RedirectToAction("TeamSchedule", "ShiftSchedule"), // <-- هنا بدل Pending
                     AgentRole.RTM => RedirectToAction("Pending", "ShiftSwapRequest"),
                     _ => RedirectToAction("Index", "Home")
                 };
+
             }
 
             // Invalid login

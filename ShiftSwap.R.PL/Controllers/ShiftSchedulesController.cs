@@ -4,11 +4,8 @@ using ShiftSwap.R.DAL.Models;
 using ShiftSwap.R.PL.Dtos;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
-using Microsoft.AspNetCore.Http;
 
 namespace ShiftSwap.R.PL.Controllers
 {
@@ -23,94 +20,6 @@ namespace ShiftSwap.R.PL.Controllers
             _agentRepo = agentRepo;
         }
 
-        // GET: ShiftSchedule/Index?agentId=1
-        public async Task<IActionResult> Index(int? agentId, DateTime? fromDate, DateTime? toDate)
-        {
-            if (agentId == null)
-                return BadRequest("AgentId is required");
-
-            var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agentId.Value, fromDate, toDate);
-
-            var result = schedules.Select(s => new ShiftScheduleDto
-            {
-                Id = s.Id,
-                Date = s.Date,
-                ShiftStart = s.ShiftStart,
-                ShiftEnd = s.ShiftEnd,
-                Shift = s.Shift,
-                LOB = s.LOB,
-                Schedule = s.Schedule,
-                AgentId = s.AgentId,
-                AgentName = s.Agent?.Name,
-                AgentHRID = s.Agent?.HRID // جديد
-            }).ToList();
-
-            ViewBag.AgentName = schedules.FirstOrDefault()?.Agent?.Name ?? "Agent";
-            ViewBag.AgentHRID = schedules.FirstOrDefault()?.Agent?.HRID ?? "";
-
-            return View(result);
-        }
-
-        // GET: ShiftSchedule/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var schedule = await _shiftScheduleRepo.GetByIdAsync(id);
-            if (schedule == null)
-                return NotFound();
-
-            var dto = new ShiftScheduleDto
-            {
-                Id = schedule.Id,
-                Date = schedule.Date,
-                ShiftStart = schedule.ShiftStart,
-                ShiftEnd = schedule.ShiftEnd,
-                Shift = schedule.Shift,
-                LOB = schedule.LOB,
-                Schedule = schedule.Schedule,
-                AgentId = schedule.AgentId,
-                AgentName = schedule.Agent?.Name,
-                AgentHRID = schedule.Agent?.HRID // جديد
-            };
-
-            return View(dto);
-        }
-
-        // GET: ShiftSchedule/DownloadExcel?agentId=1&fromDate=...&toDate=...
-        public async Task<IActionResult> DownloadExcel(int agentId, DateTime? fromDate, DateTime? toDate)
-        {
-            var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agentId, fromDate, toDate);
-
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Shift Schedule");
-
-            worksheet.Cell(1, 1).Value = "Date";
-            worksheet.Cell(1, 2).Value = "Shift Start";
-            worksheet.Cell(1, 3).Value = "Shift End";
-            worksheet.Cell(1, 4).Value = "Shift";
-            worksheet.Cell(1, 5).Value = "LOB";
-            worksheet.Cell(1, 6).Value = "Schedule";
-
-            int row = 2;
-            foreach (var s in schedules)
-            {
-                worksheet.Cell(row, 1).Value = s.Date.ToString("yyyy-MM-dd");
-                worksheet.Cell(row, 2).Value = s.ShiftStart.ToString();
-                worksheet.Cell(row, 3).Value = s.ShiftEnd.ToString();
-                worksheet.Cell(row, 4).Value = s.Shift;
-                worksheet.Cell(row, 5).Value = s.LOB;
-                worksheet.Cell(row, 6).Value = s.Schedule;
-                row++;
-            }
-
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Seek(0, SeekOrigin.Begin);
-
-            return File(stream.ToArray(),
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        $"ShiftSchedule_Agent{agentId}.xlsx");
-        }
-
         // GET: ShiftSchedule/MySchedule
         public async Task<IActionResult> MySchedule(string? week, DateTime? day)
         {
@@ -123,28 +32,15 @@ namespace ShiftSwap.R.PL.Controllers
                 return NotFound("Agent not found");
 
             var today = DateTime.Today;
-
             var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
             int currentWeek = calendar.GetWeekOfYear(today,
                 System.Globalization.CalendarWeekRule.FirstFourDayWeek,
                 DayOfWeek.Sunday);
-
             int totalWeeks = calendar.GetWeekOfYear(new DateTime(today.Year, 12, 31),
                 System.Globalization.CalendarWeekRule.FirstFourDayWeek,
                 DayOfWeek.Sunday);
 
-            int selectedWeek;
-            if (string.IsNullOrEmpty(week) || week == "this")
-                selectedWeek = currentWeek;
-            else if (week == "next")
-            {
-                selectedWeek = Math.Min(currentWeek + 1, totalWeeks);
-            }
-            else if (int.TryParse(week, out int parsedWeek))
-                selectedWeek = Math.Min(Math.Max(1, parsedWeek), totalWeeks);
-            else
-                selectedWeek = currentWeek;
-
+            int selectedWeek = DetermineSelectedWeek(week, currentWeek, totalWeeks);
             DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
             DateTime endOfWeek = startOfWeek.AddDays(4);
 
@@ -168,11 +64,11 @@ namespace ShiftSwap.R.PL.Controllers
                 Schedule = s.Schedule,
                 AgentId = s.AgentId,
                 AgentName = s.Agent?.Name,
-                AgentHRID = s.Agent?.HRID // جديد
+                AgentHRID = s.Agent?.HRID
             }).ToList();
 
             ViewBag.AgentName = agent.Name;
-            ViewBag.AgentHRID = agent.HRID; // جديد
+            ViewBag.AgentHRID = agent.HRID;
             ViewBag.StartDate = startOfWeek.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endOfWeek.ToString("yyyy-MM-dd");
             ViewBag.SelectedWeek = selectedWeek;
@@ -182,12 +78,88 @@ namespace ShiftSwap.R.PL.Controllers
             return View(result);
         }
 
+        // GET: ShiftSchedule/TeamSchedule
+        public async Task<IActionResult> TeamSchedule(string? week, DateTime? day)
+        {
+            var loginId = HttpContext.Session.GetString("LoginID");
+            if (string.IsNullOrEmpty(loginId))
+                return RedirectToAction("Login", "Account");
+
+            var teamLeader = await _agentRepo.FindFirstAsync(a => a.LoginID == loginId);
+            if (teamLeader == null)
+                return NotFound("Team Leader not found");
+
+            var teamAgents = await _agentRepo.FindAsync(a => a.ProjectId == teamLeader.ProjectId);
+
+            var today = DateTime.Today;
+            var calendar = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
+            int currentWeek = calendar.GetWeekOfYear(today,
+                System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Sunday);
+            int totalWeeks = calendar.GetWeekOfYear(new DateTime(today.Year, 12, 31),
+                System.Globalization.CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Sunday);
+
+            int selectedWeek = DetermineSelectedWeek(week, currentWeek, totalWeeks);
+            DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
+            DateTime endOfWeek = startOfWeek.AddDays(4);
+
+            var schedules = new List<ShiftSchedule>();
+            foreach (var agent in teamAgents)
+            {
+                var agentSchedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, startOfWeek, endOfWeek);
+                schedules.AddRange(agentSchedules);
+            }
+
+            if (day.HasValue)
+            {
+                schedules = schedules.Where(s => s.Date.Date == day.Value.Date).ToList();
+                startOfWeek = day.Value.Date;
+                endOfWeek = day.Value.Date;
+            }
+
+            var result = schedules.Select(s => new ShiftScheduleDto
+            {
+                Id = s.Id,
+                Date = s.Date,
+                ShiftStart = s.ShiftStart,
+                ShiftEnd = s.ShiftEnd,
+                Shift = s.Shift,
+                LOB = s.LOB,
+                Schedule = s.Schedule,
+                AgentId = s.AgentId,
+                AgentName = s.Agent?.Name,
+                AgentHRID = s.Agent?.HRID
+            }).OrderBy(s => s.Date).ThenBy(s => s.AgentName).ToList();
+
+            ViewBag.TeamLeaderName = teamLeader.Name;
+            ViewBag.StartDate = startOfWeek.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = endOfWeek.ToString("yyyy-MM-dd");
+            ViewBag.SelectedWeek = selectedWeek;
+            ViewBag.CurrentWeek = currentWeek;
+            ViewBag.TotalWeeks = totalWeeks;
+
+            return View(result);
+        }
+
+        private int DetermineSelectedWeek(string? week, int currentWeek, int totalWeeks)
+        {
+            if (string.IsNullOrEmpty(week) || week == "this")
+                return currentWeek;
+            else if (week == "next")
+                return Math.Min(currentWeek + 1, totalWeeks);
+            else if (int.TryParse(week, out int parsedWeek))
+                return Math.Min(Math.Max(1, parsedWeek), totalWeeks);
+            else
+                return currentWeek;
+        }
+
         private DateTime FirstDateOfWeek(int year, int weekOfYear)
         {
             DateTime jan1 = new DateTime(year, 1, 1);
             int daysOffset = DayOfWeek.Sunday - jan1.DayOfWeek;
-
             DateTime firstSunday = jan1.AddDays(daysOffset);
+
             var cal = System.Globalization.DateTimeFormatInfo.CurrentInfo.Calendar;
             int firstWeek = cal.GetWeekOfYear(jan1,
                 System.Globalization.CalendarWeekRule.FirstFourDayWeek,

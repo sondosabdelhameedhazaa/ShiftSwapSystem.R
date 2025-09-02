@@ -1,0 +1,104 @@
+﻿@{
+    ViewData["Title"] = "Team Leader Direct Swap";
+    var agents = ViewBag.TeamAgents as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<style>
+    :root {
+        --raya-navy: #002147;
+        --raya-cyan: #00a8e8;
+    }
+
+    h2 {
+        color: var(--raya-navy);
+        font-weight: 700;
+        margin-bottom: 25px;
+    }
+
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        margin-bottom: 25px;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        color: white;
+        font-weight: 600;
+        padding: 15px 20px;
+    }
+
+    .btn-raya {
+        background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        color: white !important;
+        font-weight: 600;
+        transition: 0.3s ease;
+    }
+
+        .btn-raya:hover {
+            opacity: 0.95;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+    select.form-select,
+    input.form-control {
+        border-radius: 10px;
+        padding: 10px 12px;
+        transition: 0.3s ease;
+    }
+
+        select.form-select:focus,
+        input.form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 168, 232, 0.25);
+            border-color: var(--raya-cyan);
+        }
+
+    label.form-label {
+        font-weight: 600;
+        color: var(--raya-navy);
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0">@ViewData["Title"]</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="TLDirectSwap" method="post">
+            <div class="mb-3">
+                <label for="requestorId" class="form-label">Requestor</label>
+                <select class="form-select shadow-sm" id="requestorId" name="requestorId" required>
+                    <option value="">Select Requestor</option>
+                    @foreach (var a in agents)
+                    {
+                        <option value="@a.Value">@a.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="targetId" class="form-label">Target</label>
+                <select class="form-select shadow-sm" id="targetId" name="targetId" required>
+                    <option value="">Select Target</option>
+                    @foreach (var a in agents)
+                    {
+                        <option value="@a.Value">@a.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="swapDate" class="form-label">Swap Date</label>
+                <input type="date" class="form-control shadow-sm" id="swapDate" name="swapDate"
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+
+            <button type="submit" class="btn-raya">Swap</button>
+        </form>
+    </div>
+</div>
