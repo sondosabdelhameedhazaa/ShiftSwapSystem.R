@@ -42,25 +42,21 @@ namespace ShiftSwap.R.PL.Controllers
 
             if (agent != null)
             {
-                // Save session data
                 HttpContext.Session.SetString("UserRole", agent.Role.ToString());
                 HttpContext.Session.SetString("UserProject", agent.Project?.Name ?? "");
                 HttpContext.Session.SetString("UserName", agent.NTName ?? agent.Name);
                 HttpContext.Session.SetString("LoginID", agent.LoginID);
 
-                // Redirect based on role
-                // Redirect based on role
                 return agent.Role switch
                 {
                     AgentRole.Agent => RedirectToAction("MySchedule", "ShiftSchedule"),
-                    AgentRole.TeamLeader => RedirectToAction("TeamSchedule", "ShiftSchedule"), // <-- هنا بدل Pending
+                    AgentRole.TeamLeader => RedirectToAction("TeamSchedule", "ShiftSchedule"), 
                     AgentRole.RTM => RedirectToAction("Pending", "ShiftSwapRequest"),
                     _ => RedirectToAction("Index", "Home")
                 };
 
             }
 
-            // Invalid login
             ModelState.AddModelError("", "Invalid credentials. Please check your Login ID and Name.");
             return View(loginDto);
         }

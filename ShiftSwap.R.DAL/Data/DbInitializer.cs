@@ -10,7 +10,6 @@ namespace ShiftSwap.R.DAL.Data
     {
         public static void Seed(ShiftSwapDbContext context)
         {
-            // ===== إنشاء المشروع =====
             var project = context.Projects.FirstOrDefault(p => p.Name == "Gm-Onstar");
             if (project == null)
             {
@@ -19,7 +18,6 @@ namespace ShiftSwap.R.DAL.Data
                 context.SaveChanges();
             }
 
-            // ===== إنشاء Agents =====
             var agent1 = context.Agents.FirstOrDefault(a => a.HRID == "119546") ?? new Agent
             {
                 Name = "Alaa eldin Mahmoud Ghaly, Mariam",
@@ -50,7 +48,6 @@ namespace ShiftSwap.R.DAL.Data
                 ProjectId = project.Id
             };
 
-            // ===== إنشاء Team Leader TL1 =====
             var teamLeader = context.Agents.FirstOrDefault(a => a.HRID == "TL1") ?? new Agent
             {
                 Name = "Team Leader TL1",
@@ -61,7 +58,6 @@ namespace ShiftSwap.R.DAL.Data
                 ProjectId = project.Id
             };
 
-            // إضافة كل الـ Agents إذا لم يكونوا موجودين
             if (agent1.Id == 0) context.Agents.Add(agent1);
             if (agent2.Id == 0) context.Agents.Add(agent2);
             if (agent3.Id == 0) context.Agents.Add(agent3);
@@ -69,7 +65,6 @@ namespace ShiftSwap.R.DAL.Data
 
             context.SaveChanges();
 
-            // ===== إعداد الشفتات =====
             var agents = new[]
             {
                 new { Agent = agent1, ShiftStart = new TimeSpan(7,0,0), ShiftEnd = new TimeSpan(16,0,0), ShiftType = "Original" },
@@ -78,14 +73,14 @@ namespace ShiftSwap.R.DAL.Data
             };
 
             var today = DateTime.Today;
-            var currentSunday = today.AddDays(-(int)today.DayOfWeek); // بداية الأسبوع الأحد
+            var currentSunday = today.AddDays(-(int)today.DayOfWeek); 
             var weeks = Enumerable.Range(-10, 12)
                 .Select(offset => currentSunday.AddDays(offset * 7))
                 .ToList();
 
             foreach (var weekStart in weeks)
             {
-                for (int dayOffset = 0; dayOffset < 7; dayOffset++) // 7 أيام الآن
+                for (int dayOffset = 0; dayOffset < 7; dayOffset++) 
                 {
                     var date = weekStart.AddDays(dayOffset);
 
@@ -101,7 +96,7 @@ namespace ShiftSwap.R.DAL.Data
                                 Date = date,
                                 ShiftStart = isOffDay ? TimeSpan.Zero : a.ShiftStart,
                                 ShiftEnd = isOffDay ? TimeSpan.Zero : a.ShiftEnd,
-                                Shift = isOffDay ? "OFF" : a.ShiftType, // نص OFF للأيام الفارغة
+                                Shift = isOffDay ? "OFF" : a.ShiftType, 
                                 LOB = "Gm-Onstar",
                                 Schedule = "AutoTest",
                                 CreatedBy = "System Admin",
@@ -114,7 +109,6 @@ namespace ShiftSwap.R.DAL.Data
                 }
             }
 
-            // ===== تأكد كل الـ Agents مرتبطين بنفس المشروع =====
             var agentsToAddOrUpdate = new[]
             {
                 new { HRID = "119546", Name = agent1.Name, LoginID = agent1.LoginID, NTName = agent1.NTName },

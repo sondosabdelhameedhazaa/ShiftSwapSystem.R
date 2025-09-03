@@ -14,7 +14,7 @@ namespace ShiftSwap.R.PL.Dtos
         public string? ProjectName { get; set; }
         public string? TeamLeaderName { get; set; }
 
-        public string ShiftStart { get; set; }  // <-- string بدل TimeSpan?
+        public string ShiftStart { get; set; }  
         public string ShiftEnd { get; set; }
 
         public string? Shift { get; set; }

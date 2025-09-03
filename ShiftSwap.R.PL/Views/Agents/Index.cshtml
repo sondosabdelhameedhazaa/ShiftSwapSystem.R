@@ -8,7 +8,6 @@
     var isAgent = ViewBag.IsAgent != null && (bool)ViewBag.IsAgent;
     var showSearchOnly = ViewBag.ShowSearchOnly != null && (bool)ViewBag.ShowSearchOnly;
 
-    // نطاق التواريخ المسموح به
     var today = DateTime.Today;
     var tomorrow = today.AddDays(1);
     var endOfNextWeek = today.AddDays(14);
@@ -16,11 +15,11 @@
     DateTime searchDate;
     if (!DateTime.TryParse(ViewBag.SearchDate as string, out searchDate))
     {
-        searchDate = tomorrow; // نبدأ من بكرة
+        searchDate = tomorrow; 
     }
     else if (searchDate < tomorrow || searchDate > endOfNextWeek)
     {
-        searchDate = tomorrow; // إذا التاريخ خارج النطاق نرجع لبكرة
+        searchDate = tomorrow; 
     }
 }
 
@@ -110,7 +109,6 @@
         font-weight: 500;
     }
 
-    /* تحسين شكل الفورم */
     .search-form .form-group {
         display: flex;
         flex-direction: column;
@@ -266,7 +264,6 @@
 
 @section Scripts {
     <script>
-        // منع المستخدم من إدخال تاريخ خارج النطاق يدويًا
         const dateInput = document.getElementById('dateInput');
         const minDate = new Date(dateInput.min);
         const maxDate = new Date(dateInput.max);

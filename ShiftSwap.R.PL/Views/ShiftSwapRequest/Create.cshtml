@@ -115,7 +115,6 @@
             font-size: 15px;
         }
 
-    /* ستايل البوب اب الجديد */
     .custom-popup {
         background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
         color: white;
@@ -175,7 +174,6 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
-    <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -196,14 +194,13 @@
 
         document.getElementById("targetAgentSelect").addEventListener("change", updateShifts);
 
-        // عرض البوب اب بنفس ستايل Your Shift
         const errorMessage = '@errorMessage';
         if (errorMessage) {
             Swal.fire({
                 html: `<div class="custom-popup">${errorMessage}</div>`,
                 showConfirmButton: true,
                 confirmButtonColor: '#002147',
-                background: 'transparent', // خلي الخلفية برا
+                background: 'transparent', 
                 showCloseButton: true
             });
         }

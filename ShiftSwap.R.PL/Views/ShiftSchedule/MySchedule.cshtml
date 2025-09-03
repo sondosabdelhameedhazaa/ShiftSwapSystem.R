@@ -129,19 +129,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(s => s.Date))
-                        {
-                            <tr>
-                                <td>@item.Date.ToString("dd-MMMM-yyyy")</td>
-                                <td>
-                                    @(item.Shift == "OFF" ? "OFF" : item.ShiftStart.ToString(@"hh\:mm"))
-                                </td>
-                                <td>
-                                    @(item.Shift == "OFF" ? "OFF" : item.ShiftEnd.ToString(@"hh\:mm"))
-                                </td>
-                                <td>@item.LOB</td>
-                            </tr>
-                        }
+                    @foreach (var item in Model.OrderBy(s => s.Date))
+                    {
+                        <tr>
+                            <td>
+                                @item.Date.ToString("dddd, dd-MMMM")  
+                            </td>
+                            <td>
+                                @(item.Shift == "OFF" ? "OFF" : item.ShiftStart.ToString(@"hh\:mm"))
+                            </td>
+                            <td>
+                                @(item.Shift == "OFF" ? "OFF" : item.ShiftEnd.ToString(@"hh\:mm"))
+                            </td>
+                            <td>@item.LOB</td>
+                        </tr>
+                    }
+
+
                     </tbody>
                 </table>
             </div>

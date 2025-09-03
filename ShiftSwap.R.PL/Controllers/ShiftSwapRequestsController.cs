@@ -54,7 +54,7 @@ namespace ShiftSwap.R.PL.Controllers
             return View(dto);
         }
 
-        // GET: Create Swap Request for agents (regular)
+        // GET: Create Swap Request for agents 
         public async Task<IActionResult> Create(int targetAgentId, DateTime? swapDate)
         {
             var ntName = HttpContext.Session.GetString("UserName");
@@ -118,10 +118,8 @@ namespace ShiftSwap.R.PL.Controllers
             if (createDto.SwapDate.Date <= DateTime.Now.Date)
                 return await LoadFormAgain(createDto, requestor.Id, "Swap date must be in the future.");
 
-            // جلب كل الـ swaps لنفس اليوم
             var existingSwaps = await _shiftSwapRepo.GetByDateAsync(createDto.SwapDate.Date);
 
-            // فلترة فقط الـ Pending
             var pendingSwaps = existingSwaps
                 .Where(r => r.Status == SwapStatus.Pending)
                 .ToList();
@@ -131,14 +129,12 @@ namespace ShiftSwap.R.PL.Controllers
                 .Distinct()
                 .ToList();
 
-            // الرسالة تظهر فقط إذا هناك Pending
             if (agentsInPendingSwaps.Contains(requestor.Id) || agentsInPendingSwaps.Contains(createDto.TargetAgentId))
             {
                 return await LoadFormAgain(createDto, requestor.Id,
                     "You or the target agent already have a pending swap for the same day and shift. Please refer back to your Team Leader");
             }
 
-            // Swap request يتم إضافته حتى لو هناك Approved أو Rejected
             var swapRequest = _mapper.Map<ShiftSwapRequest>(createDto);
             swapRequest.RequestorAgentId = requestor.Id;
             swapRequest.TargetAgentId = target.Id;
@@ -287,7 +283,6 @@ namespace ShiftSwap.R.PL.Controllers
 
             if (!string.IsNullOrEmpty(errorMessage))
             {
-                // بدل إضافة ModelState، نمرر للـ ViewData ليتم عرضها في popup
                 ViewData["ErrorMessage"] = errorMessage;
             }
 

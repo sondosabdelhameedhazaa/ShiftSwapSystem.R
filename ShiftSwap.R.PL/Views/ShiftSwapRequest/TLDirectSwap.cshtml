@@ -2,10 +2,9 @@
     ViewData["Title"] = "Team Leader Direct Swap";
     var agents = ViewBag.TeamAgents as List<SelectListItem> ?? new List<SelectListItem>();
 
-    // تحديد نطاق التواريخ
     var today = DateTime.Today;
     var tomorrow = today.AddDays(1);
-    var endOfNextWeek = today.AddDays(14); // الأسبوع الحالي + الأسبوع الجاي
+    var endOfNextWeek = today.AddDays(14); 
 }
 <style>
     :root {
@@ -152,7 +151,6 @@
     </div>
 </div>
 
-<!-- مودال الخطأ -->
 <div id="errorModal" class="modal">
     <div class="modal-content">
         <p>Requestor and Target cannot be the same person!</p>

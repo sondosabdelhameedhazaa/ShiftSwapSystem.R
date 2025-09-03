@@ -13,30 +13,28 @@ namespace ShiftSwap.R.PL
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpContextAccessor();
 
-            // Register DbContext
+            //  DbContext
             builder.Services.AddDbContext<ShiftSwapDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Register Repositories & UnitOfWork
+            //  Repositories & UnitOfWork
             builder.Services.AddScoped<IAgentRepository, AgentRepository>();
             builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
             builder.Services.AddScoped<IShiftScheduleRepository, ShiftScheduleRepository>();
             builder.Services.AddScoped<IShiftSwapRequestRepository, ShiftSwapRequestRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // Register AutoMapper
+            //  AutoMapper
             builder.Services.AddAutoMapper(typeof(Program));
 
-            // Enable Windows Authentication (for NTName)
             builder.Services.AddAuthentication(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
 
             builder.Services.AddSession(options =>
             {
-                options.IdleTimeout = TimeSpan.FromMinutes(30); // Adjust session timeout as needed
+                options.IdleTimeout = TimeSpan.FromMinutes(30); 
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });

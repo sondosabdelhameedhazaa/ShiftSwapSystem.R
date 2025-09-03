@@ -126,7 +126,7 @@
                         @foreach (var item in Model.OrderBy(s => s.Date).ThenBy(s => s.AgentName))
                         {
                             <tr>
-                                <td>@item.Date.ToString("dd-MMMM-yyyy")</td>
+                                <td>@item.Date.ToString("dddd, dd-MMMM")</td>
                                 <td>@item.AgentName</td>
                                 <td>@item.AgentHRID</td>
                                 <td>@item.ShiftStart.ToString(@"hh\:mm")</td>

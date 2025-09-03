@@ -8,7 +8,6 @@ namespace ShiftSwap.R.PL.Mapping
     {
         public AgentProfile()
         {
-            //  From Agent -> AgentReadDto 
             CreateMap<Agent, AgentReadDto>()
                 .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.Name))
                 .ForMember(dest => dest.TeamLeaderName, opt => opt.MapFrom(src => src.TeamLeader != null ? src.TeamLeader.Name : null))
@@ -18,13 +17,10 @@ namespace ShiftSwap.R.PL.Mapping
             .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project != null ? src.Project.Name : string.Empty))
             .ForMember(dest => dest.TeamLeaderName, opt => opt.MapFrom(src => src.TeamLeader != null ? src.TeamLeader.Name : string.Empty));
 
-            //  From CreateAgentDto -> Agent 
             CreateMap<CreateAgentDto, Agent>();
 
-            //  From EditAgentDto -> Agent 
             CreateMap<EditAgentDto, Agent>();
 
-            //  From Agent -> EditAgentDto 
             CreateMap<Agent, EditAgentDto>();
         }
     }

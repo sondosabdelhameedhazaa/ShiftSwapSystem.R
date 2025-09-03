@@ -26,20 +26,17 @@
             margin: 0;
         }
 
-        /* ====== Layout Grid (Sidebar pushes content) ====== */
         .app {
             min-height: 100vh;
             display: grid;
-            grid-template-columns: 0 1fr; /* closed */
+            grid-template-columns: 0 1fr; 
             transition: grid-template-columns .3s ease;
         }
 
             .app.open {
                 grid-template-columns: var(--sidebar-w) 1fr;
             }
-        /* open */
 
-        /* ====== Sidebar ====== */
         .sidebar {
             background: var(--raya-navy);
             color: #fff;
@@ -72,12 +69,11 @@
                     color: #fff;
                 }
 
-        /* ====== Toggle button ====== */
         .menu-toggle {
             position: fixed;
             top: 16px;
             left: 16px;
-            z-index: 2000; /* فوق كل حاجة */
+            z-index: 2000; 
             border: 0;
             border-radius: 10px;
             padding: 10px 12px;
@@ -89,22 +85,19 @@
         }
 
         .app.open ~ .menu-toggle {
-            left: calc(var(--sidebar-w) + 16px); /* يتحرك يمين لما السايدبار يفتح */
+            left: calc(var(--sidebar-w) + 16px); 
         }
 
-        /* ====== Main ====== */
-        /* ====== Main ====== */
+       
         .main {
             padding: 24px;
-            padding-top: 70px; /* خلى الكلام ينزل تحت الزرار */
+            padding-top: 70px; 
         }
 
     </style>
 </head>
 <body>
-    <!-- Grid wrapper -->
     <div class="app" id="app">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <a class="brand" asp-controller="Home" asp-action="Index">ShiftSwap</a>
 
@@ -113,7 +106,7 @@
             }
 
             <ul class="nav flex-column px-2">
-                @* لو المستخدم Agent *@
+                @*  Agent *@
                 @if (userRole == "Agent")
                 {
                     <li class="nav-item">
@@ -127,7 +120,7 @@
                     </li>
                 }
 
-                @* لو المستخدم TeamLeader أو RTM *@
+                @*  TeamLeader \ RTM *@
                 @if (userRole == "TeamLeader" || userRole == "RTM")
                 {
                     <li class="nav-item">
@@ -163,13 +156,11 @@
             </ul>
         </aside>
 
-        <!-- Main content -->
         <div class="main">
             @RenderBody()
         </div>
     </div>
 
-    <!-- Toggle lives outside .app -->
     <button class="menu-toggle" id="menuToggle" type="button" aria-label="Toggle menu">☰</button>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

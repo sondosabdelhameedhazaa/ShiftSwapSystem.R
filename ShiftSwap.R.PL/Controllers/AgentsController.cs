@@ -40,18 +40,15 @@ namespace ShiftSwap.R.PL.Controllers
             TimeSpan? shiftFromTime = TimeSpan.TryParse(shiftFrom, out var tempFrom) ? tempFrom : (TimeSpan?)null;
             TimeSpan? shiftToTime = TimeSpan.TryParse(shiftTo, out var tempTo) ? tempTo : (TimeSpan?)null;
 
-            // Get agents with shifts on that day excluding the current agent
             var availableAgentsWithShifts = await _unitOfWork.Agents
                 .GetAvailableAgentsWithShiftsAsync(date.Value, currentAgent.Id);
 
-            // Filter by shift times, but always include OFF shifts
             availableAgentsWithShifts = availableAgentsWithShifts
                 .Where(a => a.Schedule.Shift == "OFF" ||
                             (!shiftFromTime.HasValue || a.Schedule.ShiftStart >= shiftFromTime.Value) &&
                             (!shiftToTime.HasValue || a.Schedule.ShiftEnd <= shiftToTime.Value))
                 .ToList();
 
-            // Filter only agents in the same project if current user is not an Agent
             if (currentAgent.Role != AgentRole.Agent)
             {
                 availableAgentsWithShifts = availableAgentsWithShifts
@@ -69,9 +66,8 @@ namespace ShiftSwap.R.PL.Controllers
                 Role = tuple.Agent.Role,
                 ProjectName = tuple.Agent.Project?.Name,
                 TeamLeaderName = tuple.Agent.TeamLeader?.Name,
-                Shift = tuple.Schedule.Shift, // Original / Swapped / OFF
+                Shift = tuple.Schedule.Shift, 
 
-                // عرض الوقت الفعلي إلا إذا الشفت OFF
                 ShiftStart = tuple.Schedule.Shift == "OFF" ? "OFF" : tuple.Schedule.ShiftStart.ToString(@"hh\:mm"),
                 ShiftEnd = tuple.Schedule.Shift == "OFF" ? "OFF" : tuple.Schedule.ShiftEnd.ToString(@"hh\:mm")
             }).ToList();

@@ -6,9 +6,9 @@ namespace ShiftSwap.R.PL.Dtos
     {
         public int Id { get; set; }
         public string RequestorName { get; set; }
-        public string RequestorHRID { get; set; } // جديد
+        public string RequestorHRID { get; set; } 
         public string TargetName { get; set; }
-        public string TargetHRID { get; set; } // جديد
+        public string TargetHRID { get; set; } 
         public DateTime SwapDate { get; set; }
         public string Status { get; set; }
         public string Comment { get; set; }
