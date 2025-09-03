@@ -1,10 +1,25 @@
-﻿   
-   @model List<ShiftSwap.R.PL.Dtos.AgentReadDto>
+﻿@model List<ShiftSwap.R.PL.Dtos.AgentReadDto>
 
 @{
     ViewData["Title"] = "Available Agents";
-    var selectedDate = ViewBag.SearchDate;
+
+    // تحديد نطاق التواريخ
+    var today = DateTime.Today;
+    var tomorrow = today.AddDays(1);
+    var endOfNextWeek = today.AddDays(14); // الأسبوع الحالي + الأسبوع الجاي
+
+    // تحويل التاريخ المحدد إلى صيغة صحيحة للـ input
+    string formattedSelectedDate = null;
+    if (DateTime.TryParse(ViewBag.SearchDate as string, out var parsedDate))
+    {
+        if (parsedDate >= tomorrow && parsedDate <= endOfNextWeek)
+            formattedSelectedDate = parsedDate.ToString("yyyy-MM-dd");
+    }
+
+    var isAgent = ViewBag.IsAgent as bool? ?? false;
 }
+
+
 
 <style>
     :root {
@@ -117,7 +132,12 @@
                     <label class="form-label fw-semibold text-dark">Select Date</label>
                     <div class="input-group">
                         <span class="input-group-text">📅</span>
-                        <input type="date" name="date" class="form-control" value="@selectedDate" />
+                        <input type="date" name="date" 
+                               id="datePicker"
+                               class="form-control" 
+                               value="@formattedSelectedDate"
+                               min="@tomorrow.ToString("yyyy-MM-dd")" 
+                               max="@endOfNextWeek.ToString("yyyy-MM-dd")" />
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -129,7 +149,7 @@
         </form>
 
         <!-- Table or Alert -->
-        @if (Model.Any())
+        @if (Model != null && Model.Any())
         {
             <div class="table-responsive">
                 <table class="table table-bordered align-middle">
@@ -142,9 +162,16 @@
                             <th>Role</th>
                             <th>Project</th>
                             <th>Team Leader</th>
-                            <th>Shift Time</th>
-                            <th>Shift Name</th>
-                            <th>Actions</th>
+                            @if (isAgent)
+                            {
+                                <th>Shift Start</th>
+                                <th>Shift End</th>
+                                <th>Actions</th>
+                            }
+                            else
+                            {
+                                <th>Actions</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -158,29 +185,30 @@
                                 <td>@agent.Role</td>
                                 <td>@agent.ProjectName</td>
                                 <td>@agent.TeamLeaderName</td>
-                                <td>
-                                    @if (agent.ShiftStart.HasValue && agent.ShiftEnd.HasValue)
-                                    {
-                                        @($"{agent.ShiftStart.Value:hh\\:mm} - {agent.ShiftEnd.Value:hh\\:mm}")
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (!string.IsNullOrWhiteSpace(agent.Shift))
-                                    {
-                                        <span class="badge bg-info text-dark">@agent.Shift</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
-                                </td>
-                                <td>
-                                    <a asp-action="Details" asp-route-id="@agent.Id" class="btn-details">Details</a>
-                                </td>
+
+                                @if (isAgent)
+                                {
+                                    <td>@(agent.Shift == "OFF" ? "OFF" : agent.ShiftStart)</td>
+                                    <td>@(agent.Shift == "OFF" ? "OFF" : agent.ShiftEnd)</td>
+
+                                    <td>
+                                        <a asp-controller="ShiftSwapRequest"
+                                           asp-action="Create"
+                                           asp-route-targetAgentId="@agent.Id"
+                                           asp-route-swapDate="@formattedSelectedDate"
+                                           class="btn btn-warning btn-sm">
+                                            🔄 Request Swap
+                                        </a>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@agent.Id" class="btn-details btn-sm">
+                                            ℹ️ Details
+                                        </a>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -195,3 +223,17 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // منع المستخدم من إدخال تاريخ خارج النطاق يدويًا
+        const dateInput = document.getElementById('datePicker');
+        dateInput.addEventListener('input', function () {
+            const min = new Date(this.min);
+            const max = new Date(this.max);
+            const selected = new Date(this.value);
+            if (selected < min) this.value = this.min;
+            if (selected > max) this.value = this.max;
+        });
+    </script>
+}

@@ -7,16 +7,23 @@
 
     var isAgent = ViewBag.IsAgent != null && (bool)ViewBag.IsAgent;
     var showSearchOnly = ViewBag.ShowSearchOnly != null && (bool)ViewBag.ShowSearchOnly;
-    var searchDateString = ViewBag.SearchDate as string;
-    DateTime searchDate;
-    if (!DateTime.TryParse(searchDateString, out searchDate))
-    {
-        searchDate = DateTime.Today;
-    }
 
-    var searchShiftFrom = ViewBag.SearchShiftFrom as string ?? "08:00";
-    var searchShiftTo = ViewBag.SearchShiftTo as string ?? "17:00";
+    // نطاق التواريخ المسموح به
+    var today = DateTime.Today;
+    var tomorrow = today.AddDays(1);
+    var endOfNextWeek = today.AddDays(14);
+
+    DateTime searchDate;
+    if (!DateTime.TryParse(ViewBag.SearchDate as string, out searchDate))
+    {
+        searchDate = tomorrow; // نبدأ من بكرة
+    }
+    else if (searchDate < tomorrow || searchDate > endOfNextWeek)
+    {
+        searchDate = tomorrow; // إذا التاريخ خارج النطاق نرجع لبكرة
+    }
 }
+
 
 <style>
     :root {
@@ -131,30 +138,30 @@
         {
             <form asp-action="Index" method="get" class="mb-4 d-flex gap-3 flex-wrap search-form">
                 <div class="form-group">
-                    <label for="dateInput" class="form-label"> Date</label>
+                    <label for="dateInput" class="form-label">Date</label>
                     <input id="dateInput" type="date" name="date" class="form-control"
-                           value="@(searchDate.ToString("yyyy-MM-dd"))" required />
+                           value="@(searchDate.ToString("yyyy-MM-dd"))"
+                           min="@tomorrow.ToString("yyyy-MM-dd")"
+                           max="@endOfNextWeek.ToString("yyyy-MM-dd")"
+                           required />
                 </div>
 
                 <div class="form-group">
                     <label for="shiftFromInput" class="form-label">Shift From</label>
                     <input id="shiftFromInput" type="time" name="shiftFrom" class="form-control shift-input"
-                           value="@(!string.IsNullOrEmpty(ViewBag.SearchShiftFrom as string) ? ViewBag.SearchShiftFrom : "")"
+                           value="@(ViewBag.SearchShiftFrom ?? "")"
                            placeholder="HH:mm" />
                 </div>
 
                 <div class="form-group">
                     <label for="shiftToInput" class="form-label">Shift To</label>
                     <input id="shiftToInput" type="time" name="shiftTo" class="form-control shift-input"
-                           value="@(!string.IsNullOrEmpty(ViewBag.SearchShiftTo as string) ? ViewBag.SearchShiftTo : "")"
+                           value="@(ViewBag.SearchShiftTo ?? "")"
                            placeholder="HH:mm" />
                 </div>
 
-
-
-
                 <div class="form-group">
-                    <button type="submit" class="btn-raya"> Search</button>
+                    <button type="submit" class="btn-raya">Search</button>
                 </div>
             </form>
         }
@@ -199,6 +206,7 @@
                         </tr>
                     </thead>
                     <tbody>
+
                         @foreach (var agent in Model)
                         {
                             <tr>
@@ -212,8 +220,10 @@
 
                                 @if (isAgent)
                                 {
-                                    <td>@agent.ShiftStart</td>
-                                    <td>@agent.ShiftEnd</td>
+                                    <td>@(agent.Shift == "OFF" ? "OFF" : agent.ShiftStart)</td>
+                                    <td>@(agent.Shift == "OFF" ? "OFF" : agent.ShiftEnd)</td>
+
+
                                     <td>
                                         <a asp-controller="ShiftSwapRequest"
                                            asp-action="Create"
@@ -234,6 +244,7 @@
                                 }
                             </tr>
                         }
+                   
                     </tbody>
                 </table>
             </div>
@@ -252,3 +263,18 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // منع المستخدم من إدخال تاريخ خارج النطاق يدويًا
+        const dateInput = document.getElementById('dateInput');
+        const minDate = new Date(dateInput.min);
+        const maxDate = new Date(dateInput.max);
+
+        dateInput.addEventListener('input', function () {
+            const selected = new Date(this.value);
+            if (selected < minDate) this.value = this.min;
+            if (selected > maxDate) this.value = this.max;
+        });
+    </script>
+}

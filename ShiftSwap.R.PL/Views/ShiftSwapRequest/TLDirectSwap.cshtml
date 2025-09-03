@@ -1,8 +1,12 @@
 ﻿@{
     ViewData["Title"] = "Team Leader Direct Swap";
     var agents = ViewBag.TeamAgents as List<SelectListItem> ?? new List<SelectListItem>();
-}
 
+    // تحديد نطاق التواريخ
+    var today = DateTime.Today;
+    var tomorrow = today.AddDays(1);
+    var endOfNextWeek = today.AddDays(14); // الأسبوع الحالي + الأسبوع الجاي
+}
 <style>
     :root {
         --raya-navy: #002147;
@@ -37,6 +41,7 @@
         color: white !important;
         font-weight: 600;
         transition: 0.3s ease;
+        cursor: pointer;
     }
 
         .btn-raya:hover {
@@ -62,6 +67,48 @@
         font-weight: 600;
         color: var(--raya-navy);
     }
+
+    /* مودال */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 15px;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        font-weight: 600;
+        color: var(--raya-navy);
+    }
+
+        .modal-content button {
+            margin-top: 20px;
+            background: linear-gradient(135deg, var(--raya-navy), var(--raya-cyan));
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+            .modal-content button:hover {
+                opacity: 0.95;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
 </style>
 
 <div class="card">
@@ -69,7 +116,7 @@
         <h4 class="mb-0">@ViewData["Title"]</h4>
     </div>
     <div class="card-body">
-        <form asp-action="TLDirectSwap" method="post">
+        <form asp-action="TLDirectSwap" method="post" id="swapForm">
             <div class="mb-3">
                 <label for="requestorId" class="form-label">Requestor</label>
                 <select class="form-select shadow-sm" id="requestorId" name="requestorId" required>
@@ -95,10 +142,45 @@
             <div class="mb-3">
                 <label for="swapDate" class="form-label">Swap Date</label>
                 <input type="date" class="form-control shadow-sm" id="swapDate" name="swapDate"
-                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                       value="@tomorrow.ToString("yyyy-MM-dd")"
+                       min="@tomorrow.ToString("yyyy-MM-dd")"
+                       max="@endOfNextWeek.ToString("yyyy-MM-dd")" required />
             </div>
 
             <button type="submit" class="btn-raya">Swap</button>
         </form>
     </div>
 </div>
+
+<!-- مودال الخطأ -->
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <p>Requestor and Target cannot be the same person!</p>
+        <button id="closeModal">OK</button>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById('errorModal');
+    const closeBtn = document.getElementById('closeModal');
+
+    document.getElementById('swapForm').addEventListener('submit', function(e) {
+        const requestor = document.getElementById('requestorId').value;
+        const target = document.getElementById('targetId').value;
+
+        if(requestor && target && requestor === target) {
+            e.preventDefault();
+            modal.style.display = "block";
+        }
+    });
+
+    closeBtn.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if(event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>

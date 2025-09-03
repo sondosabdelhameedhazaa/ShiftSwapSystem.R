@@ -42,7 +42,7 @@ namespace ShiftSwap.R.PL.Controllers
 
             int selectedWeek = DetermineSelectedWeek(week, currentWeek, totalWeeks);
             DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
-            DateTime endOfWeek = startOfWeek.AddDays(4);
+            DateTime endOfWeek = startOfWeek.AddDays(6); // الآن الأسبوع كامل (الأحد → السبت)
 
             var schedules = await _shiftScheduleRepo.GetSchedulesForAgentAsync(agent.Id, startOfWeek, endOfWeek);
 
@@ -102,7 +102,7 @@ namespace ShiftSwap.R.PL.Controllers
 
             int selectedWeek = DetermineSelectedWeek(week, currentWeek, totalWeeks);
             DateTime startOfWeek = FirstDateOfWeek(today.Year, selectedWeek);
-            DateTime endOfWeek = startOfWeek.AddDays(4);
+            DateTime endOfWeek = startOfWeek.AddDays(6); // الآن الأسبوع كامل (الأحد → السبت)
 
             var schedules = new List<ShiftSchedule>();
             foreach (var agent in teamAgents)

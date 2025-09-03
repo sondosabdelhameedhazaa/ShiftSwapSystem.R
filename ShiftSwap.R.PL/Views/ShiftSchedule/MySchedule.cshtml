@@ -87,8 +87,11 @@
 
 <div class="card">
     <div class="card-header">
-        <h4 class="mb-0">Schedule for @agentName (@agentHRID)</h4>
+        <h4 class="mb-0">Schedule for</h4>
+        <p class="mb-0"><strong></strong> @agentName</p>
+        <p class="mb-0"><strong>HRID :</strong> @agentHRID</p>
         <small class="d-block">(@startDate.ToString("dd-MMMM-yyyy") → @endDate.ToString("dd-MMMM-yyyy"))</small>
+    </div>
     </div>
     <div class="card-body">
         <form method="get" asp-action="MySchedule" class="mb-4">
@@ -130,8 +133,12 @@
                         {
                             <tr>
                                 <td>@item.Date.ToString("dd-MMMM-yyyy")</td>
-                                <td>@item.ShiftStart.ToString(@"hh\:mm")</td>
-                                <td>@item.ShiftEnd.ToString(@"hh\:mm")</td>
+                                <td>
+                                    @(item.Shift == "OFF" ? "OFF" : item.ShiftStart.ToString(@"hh\:mm"))
+                                </td>
+                                <td>
+                                    @(item.Shift == "OFF" ? "OFF" : item.ShiftEnd.ToString(@"hh\:mm"))
+                                </td>
                                 <td>@item.LOB</td>
                             </tr>
                         }

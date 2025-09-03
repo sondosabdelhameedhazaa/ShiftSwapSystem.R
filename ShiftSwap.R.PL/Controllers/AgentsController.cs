@@ -37,8 +37,6 @@ namespace ShiftSwap.R.PL.Controllers
             if (!date.HasValue)
                 return View(new List<AgentReadDto>());
 
-            // تحويل الوقت من string لـ TimeSpan
-            // بدل القيمة الافتراضية، نخليها nullable
             TimeSpan? shiftFromTime = TimeSpan.TryParse(shiftFrom, out var tempFrom) ? tempFrom : (TimeSpan?)null;
             TimeSpan? shiftToTime = TimeSpan.TryParse(shiftTo, out var tempTo) ? tempTo : (TimeSpan?)null;
 
@@ -46,12 +44,12 @@ namespace ShiftSwap.R.PL.Controllers
             var availableAgentsWithShifts = await _unitOfWork.Agents
                 .GetAvailableAgentsWithShiftsAsync(date.Value, currentAgent.Id);
 
-            // Filter by shift times
+            // Filter by shift times, but always include OFF shifts
             availableAgentsWithShifts = availableAgentsWithShifts
-    .Where(a => (!shiftFromTime.HasValue || a.Schedule.ShiftStart >= shiftFromTime.Value)
-             && (!shiftToTime.HasValue || a.Schedule.ShiftEnd <= shiftToTime.Value))
-    .ToList();
-
+                .Where(a => a.Schedule.Shift == "OFF" ||
+                            (!shiftFromTime.HasValue || a.Schedule.ShiftStart >= shiftFromTime.Value) &&
+                            (!shiftToTime.HasValue || a.Schedule.ShiftEnd <= shiftToTime.Value))
+                .ToList();
 
             // Filter only agents in the same project if current user is not an Agent
             if (currentAgent.Role != AgentRole.Agent)
@@ -71,12 +69,16 @@ namespace ShiftSwap.R.PL.Controllers
                 Role = tuple.Agent.Role,
                 ProjectName = tuple.Agent.Project?.Name,
                 TeamLeaderName = tuple.Agent.TeamLeader?.Name,
-                ShiftStart = tuple.Schedule.ShiftStart,
-                ShiftEnd = tuple.Schedule.ShiftEnd,
-                Shift = tuple.Schedule.Shift
+                Shift = tuple.Schedule.Shift, // Original / Swapped / OFF
+
+                // عرض الوقت الفعلي إلا إذا الشفت OFF
+                ShiftStart = tuple.Schedule.Shift == "OFF" ? "OFF" : tuple.Schedule.ShiftStart.ToString(@"hh\:mm"),
+                ShiftEnd = tuple.Schedule.Shift == "OFF" ? "OFF" : tuple.Schedule.ShiftEnd.ToString(@"hh\:mm")
             }).ToList();
 
             return View(agentDtos);
+
+
         }
 
         public async Task<IActionResult> Details(int id)

@@ -78,27 +78,30 @@ namespace ShiftSwap.R.DAL.Data
             };
 
             var today = DateTime.Today;
-            var currentSunday = today.AddDays(-(int)today.DayOfWeek);
+            var currentSunday = today.AddDays(-(int)today.DayOfWeek); // بداية الأسبوع الأحد
             var weeks = Enumerable.Range(-10, 12)
                 .Select(offset => currentSunday.AddDays(offset * 7))
                 .ToList();
 
             foreach (var weekStart in weeks)
             {
-                for (int dayOffset = 0; dayOffset < 5; dayOffset++)
+                for (int dayOffset = 0; dayOffset < 7; dayOffset++) // 7 أيام الآن
                 {
                     var date = weekStart.AddDays(dayOffset);
+
                     foreach (var a in agents)
                     {
                         if (!context.ShiftSchedules.Any(s => s.Date.Date == date.Date && s.AgentId == a.Agent.Id))
                         {
+                            bool isOffDay = date.DayOfWeek == DayOfWeek.Friday || date.DayOfWeek == DayOfWeek.Saturday;
+
                             context.ShiftSchedules.Add(new ShiftSchedule
                             {
                                 AgentId = a.Agent.Id,
                                 Date = date,
-                                ShiftStart = a.ShiftStart,
-                                ShiftEnd = a.ShiftEnd,
-                                Shift = a.ShiftType,
+                                ShiftStart = isOffDay ? TimeSpan.Zero : a.ShiftStart,
+                                ShiftEnd = isOffDay ? TimeSpan.Zero : a.ShiftEnd,
+                                Shift = isOffDay ? "OFF" : a.ShiftType, // نص OFF للأيام الفارغة
                                 LOB = "Gm-Onstar",
                                 Schedule = "AutoTest",
                                 CreatedBy = "System Admin",

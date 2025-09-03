@@ -135,7 +135,7 @@ namespace ShiftSwap.R.PL.Controllers
             if (agentsInPendingSwaps.Contains(requestor.Id) || agentsInPendingSwaps.Contains(createDto.TargetAgentId))
             {
                 return await LoadFormAgain(createDto, requestor.Id,
-                    "Target agent has pending swap with same day and shift. Please refer back to Team Leader");
+                    "You or the target agent already have a pending swap for the same day and shift. Please refer back to your Team Leader");
             }
 
             // Swap request يتم إضافته حتى لو هناك Approved أو Rejected
@@ -180,6 +180,12 @@ namespace ShiftSwap.R.PL.Controllers
 
             return RedirectToAction(nameof(Pending));
         }
+
+
+
+
+
+
 
         // ===== TL Direct Swap =====
         [HttpGet]
@@ -251,6 +257,10 @@ namespace ShiftSwap.R.PL.Controllers
             TempData["Success"] = "Shift swapped successfully!";
             return RedirectToAction("Pending");
         }
+
+
+
+
 
         private async Task<IActionResult> LoadFormAgain(ShiftSwapRequestCreateDto createDto, int? requestorId, string? errorMessage = null)
         {
